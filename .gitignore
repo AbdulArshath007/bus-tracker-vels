@@ -1,0 +1,7 @@
+node_modules/
+.env
+dist/
+build/
+.DS_Store
+find_media.py
+vistas_logo.jpg

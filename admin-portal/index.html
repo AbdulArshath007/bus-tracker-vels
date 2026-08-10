@@ -1,0 +1,200 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/png" href="/vistas_favicon.png" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>VELS Admin Portal</title>
+    <style>
+      /* ── Critical inline skeleton — runs before any JS bundle ── */
+      * { box-sizing: border-box; margin: 0; padding: 0; }
+      :root { --bg: #f8fafc; }
+      body { background: var(--bg); font-family: 'Inter', sans-serif; }
+
+      @keyframes _sh {
+        0%   { background-position: -600px 0; }
+        100% { background-position:  600px 0; }
+      }
+      /* shimmer block — light */
+      .s {
+        border-radius: 4px;
+        background: linear-gradient(90deg, #e2e8f0 25%, #f1f5f9 50%, #e2e8f0 75%);
+        background-size: 600px 100%;
+        animation: _sh 1.4s ease-in-out infinite;
+        display: block;
+      }
+      /* shimmer block — white-on-blue (for coloured bars) */
+      .sw {
+        border-radius: 4px;
+        background: rgba(255,255,255,0.28);
+        animation: _sh 1.4s ease-in-out infinite;
+        display: block;
+      }
+
+      @keyframes _fo { to { opacity: 0; visibility: hidden; } }
+      #lsk {
+        position: fixed; inset: 0; z-index: 9999;
+        display: flex; flex-direction: column;
+        background: var(--bg);
+        animation: _fo 0.3s ease 0.9s forwards;
+        pointer-events: none;
+      }
+
+      /* ── Body: centred login card ── */
+      #lsk-body {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        padding-top: 4rem;
+        position: relative;
+      }
+
+      /* Theme-toggle circle (top-right) */
+      #lsk-toggle {
+        position: absolute; top: 1rem; right: 1rem;
+        width: 32px; height: 32px; border-radius: 50%;
+      }
+
+      /* Card wrapper */
+      #lsk-card {
+        width: 100%; max-width: 600px;
+        background: #fff;
+        border-radius: 12px;
+        overflow: hidden;
+        box-shadow: 0 20px 25px -5px rgba(0,0,0,.10), 0 10px 10px -5px rgba(0,0,0,.04);
+      }
+
+      /* Logo area */
+      #lsk-logo {
+        background: #fff;
+        padding: 1.5rem;
+        display: flex; justify-content: center; align-items: center;
+      }
+
+      /* Blue title bar */
+      #lsk-title-bar {
+        background: #2170B5;
+        padding: 1rem 1.5rem;
+        display: flex; justify-content: center;
+      }
+
+      /* Form area */
+      #lsk-form {
+        padding: 2rem;
+        display: flex; flex-direction: column; gap: 1.25rem;
+      }
+
+      /* Hint strip */
+      #lsk-hint {
+        border-left: 4px solid #2170B5;
+        background: rgba(33,112,181,0.08);
+        border-radius: 0 4px 4px 0;
+        padding: 0.75rem 1rem;
+      }
+
+      /* Label + input row */
+      .lsk-row {
+        display: grid;
+        grid-template-columns: 160px 1fr;
+        align-items: center;
+        gap: 1rem;
+      }
+      .lsk-label { margin-left: auto; }
+
+      /* Captcha row: input + box side by side */
+      #lsk-captcha-inputs {
+        display: flex; gap: 1rem; align-items: center;
+      }
+      #lsk-captcha-input  { flex: 1; }
+      #lsk-captcha-box    { width: 120px; }
+
+      /* ── Footer 1 — dark ── */
+      #lsk-foot1 {
+        background: #1C2939;
+        padding: 1rem 2rem;
+        display: flex; justify-content: center;
+      }
+      /* ── Footer 2 — blue ── */
+      #lsk-foot2 {
+        background: #2170B5;
+        padding: 0.75rem 2rem;
+        display: flex; justify-content: space-between; align-items: center;
+      }
+    </style>
+  </head>
+  <body>
+    <!-- Instant Login skeleton — shown before React mounts -->
+    <div id="lsk" aria-hidden="true">
+
+      <div id="lsk-body">
+        <!-- Theme toggle -->
+        <div id="lsk-toggle" class="s"></div>
+
+        <!-- Card -->
+        <div id="lsk-card">
+
+          <!-- Logo -->
+          <div id="lsk-logo">
+            <div class="s" style="width:180px;height:70px;border-radius:6px"></div>
+          </div>
+
+          <!-- Blue title bar -->
+          <div id="lsk-title-bar">
+            <div class="sw" style="width:160px;height:1rem"></div>
+          </div>
+
+          <!-- Form -->
+          <div id="lsk-form">
+
+            <!-- Hint strip -->
+            <div id="lsk-hint">
+              <div class="s" style="width:75%;height:0.8rem"></div>
+            </div>
+
+            <!-- Email row -->
+            <div class="lsk-row">
+              <div class="s lsk-label" style="width:110px;height:0.85rem"></div>
+              <div class="s" style="height:2.15rem"></div>
+            </div>
+
+            <!-- Password row -->
+            <div class="lsk-row">
+              <div class="s lsk-label" style="width:80px;height:0.85rem"></div>
+              <div class="s" style="height:2.15rem"></div>
+            </div>
+
+            <!-- Captcha row -->
+            <div class="lsk-row">
+              <div class="s lsk-label" style="width:60px;height:0.85rem"></div>
+              <div id="lsk-captcha-inputs">
+                <div class="s" id="lsk-captcha-input" style="height:2.15rem"></div>
+                <div class="s" id="lsk-captcha-box"   style="height:2.6rem;border-radius:4px"></div>
+              </div>
+            </div>
+
+            <!-- Submit button -->
+            <div class="s" style="height:2.75rem;border-radius:4px;background:rgba(33,112,181,0.22);margin-top:0.5rem"></div>
+
+          </div><!-- /form -->
+        </div><!-- /card -->
+      </div><!-- /body -->
+
+      <!-- Footer 1 -->
+      <div id="lsk-foot1">
+        <div class="sw" style="width:55%;height:0.8rem"></div>
+      </div>
+
+      <!-- Footer 2 -->
+      <div id="lsk-foot2">
+        <div class="sw" style="width:160px;height:0.8rem"></div>
+        <div class="sw" style="width:90px;height:0.8rem"></div>
+      </div>
+
+    </div><!-- /#lsk -->
+
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>
+
