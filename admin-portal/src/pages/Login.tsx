@@ -129,7 +129,7 @@ export const Login: React.FC = () => {
         }}>
           {/* Integrated White Logo Header */}
           <div style={{ backgroundColor: 'white', padding: '1.5rem', display: 'flex', justifyContent: 'center' }}>
-            <img src="https://www.velsuniv.ac.in/images/logo.png" alt="VELS Logo" style={{ height: '70px' }} />
+            <img src="https://erp.vistas.ac.in/velsonline/resources/Image/1ERPcollege_logo.jpg" alt="VELS Logo" style={{ height: '70px' }} />
           </div>
 
           <div style={{ backgroundColor: '#2170B5', color: 'white', padding: '1rem', textAlign: 'center', fontWeight: 600, letterSpacing: '1px' }}>
