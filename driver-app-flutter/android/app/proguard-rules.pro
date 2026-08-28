@@ -4,6 +4,9 @@
 -keep class io.flutter.** { *; }
 -keep class io.flutter.embedding.** { *; }
 
+# Ignore missing play core classes from flutter embedding
+-dontwarn com.google.android.play.core.**
+
 # ─── Socket.IO client ──────────────────────────────────────────────────────
 -keep class io.socket.** { *; }
 -keep class com.github.nkzawa.** { *; }
