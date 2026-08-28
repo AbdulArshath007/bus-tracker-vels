@@ -1,4 +1,6 @@
+import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:vels_driver/core/api_client.dart';
 import 'package:vels_driver/core/session_manager.dart';
 import 'package:vels_driver/models/user_profile.dart';
 import 'package:vels_driver/services/auth_service.dart';
@@ -50,8 +52,13 @@ class AuthNotifier extends StateNotifier<AuthState> {
 
   final SessionManager _session;
   final AuthService _authService;
+  StreamSubscription<void>? _expirySub;
 
   Future<void> _init() async {
+    _expirySub = ApiClient.instance.onSessionExpired.listen((_) {
+      state = const AuthUnauthenticated();
+    });
+
     final loggedIn = await _session.isLoggedIn();
     if (loggedIn) {
       final user = await _session.getUser();
@@ -63,6 +70,12 @@ class AuthNotifier extends StateNotifier<AuthState> {
     } else {
       state = const AuthUnauthenticated();
     }
+  }
+
+  @override
+  void dispose() {
+    _expirySub?.cancel();
+    super.dispose();
   }
 
   Future<void> login({required String email, required String password}) async {

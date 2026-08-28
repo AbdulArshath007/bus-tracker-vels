@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
 import 'package:vels_driver/app_config.dart';
@@ -12,6 +13,9 @@ class ApiClient {
   ApiClient._();
 
   static final ApiClient instance = ApiClient._();
+
+  final _unauthorizedController = StreamController<void>.broadcast();
+  Stream<void> get onSessionExpired => _unauthorizedController.stream;
 
   late final Dio dio = _buildDio();
 
@@ -53,6 +57,7 @@ class ApiClient {
             }
             // Refresh failed — clear session so UI redirects to login
             await SessionManager.instance.clear();
+            _unauthorizedController.add(null);
           }
           return handler.next(error);
         },
