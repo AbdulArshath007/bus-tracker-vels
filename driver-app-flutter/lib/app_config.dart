@@ -9,11 +9,9 @@ library app_config;
 class AppConfig {
   AppConfig._();
 
-  /// Backend REST base URL (trailing slash required for Dio).
-  static const String baseUrl = 'http://192.168.1.17:3000/v1/';
-
-  /// Socket.IO server URL.
-  static const String socketUrl = 'http://192.168.1.17:3000';
+  // Using Serveo tunnel for remote access over the internet
+  static const String baseUrl = 'https://5eee121c20fa506e-122-164-87-106.serveousercontent.com/v1/';
+  static const String socketUrl = 'https://5eee121c20fa506e-122-164-87-106.serveousercontent.com';
 
   /// Minimum GPS update interval in milliseconds.
   static const int gpsIntervalMs = 5000;

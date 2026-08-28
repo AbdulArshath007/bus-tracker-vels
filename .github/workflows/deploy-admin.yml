@@ -43,10 +43,9 @@ jobs:
       - name: Build
         working-directory: admin-portal
         env:
-          # Point the deployed frontend at the production API.
-          # Update this when the backend is publicly hosted.
-          VITE_API_URL: https://api.vels-bustracker.com/v1
-          VITE_SOCKET_URL: https://api.vels-bustracker.com
+          # Point the deployed frontend at the live Serveo tunnel.
+          VITE_API_URL: https://5eee121c20fa506e-122-164-87-106.serveousercontent.com/v1
+          VITE_SOCKET_URL: https://5eee121c20fa506e-122-164-87-106.serveousercontent.com
         run: npm run build
 
       - name: Setup Pages
