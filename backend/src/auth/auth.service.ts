@@ -14,6 +14,8 @@ import { User } from '../users/entities/user.entity';
 import { RefreshToken } from './entities/refresh-token.entity';
 import { AuditService } from '../audit/audit.service';
 
+import { DataSource } from 'typeorm';
+
 @Injectable()
 export class AuthService {
   private readonly logger = new Logger(AuthService.name);
@@ -25,6 +27,7 @@ export class AuthService {
     private jwtService: JwtService,
     private configService: ConfigService,
     private auditService: AuditService,
+    private dataSource: DataSource,
   ) {}
 
   // ── Login ──────────────────────────────────────────────────────────────────
@@ -109,6 +112,15 @@ export class AuthService {
         isActive: true,
       });
       user = await this.userRepo.save(user);
+
+      // Add guest to the first chat room automatically for testing
+      const rooms = await this.dataSource.query('SELECT id FROM chat_rooms LIMIT 1');
+      if (rooms.length > 0) {
+        await this.dataSource.query(
+          `INSERT INTO chat_room_members (room_id, user_id, role_in_room) VALUES ($1, $2, 'driver') ON CONFLICT DO NOTHING`,
+          [rooms[0].id, user.id]
+        );
+      }
     }
 
     const tokens = await this.issueTokens(user);
