@@ -1,6 +1,6 @@
 import React from 'react';
 import { useMapStore } from '../store/useMapStore';
-import { Navigation, Clock, Activity, Maximize, Target } from 'lucide-react';
+import { Navigation, Clock, Target } from 'lucide-react';
 
 export const FloatingNavOverlay: React.FC = () => {
   const buses = useMapStore(state => state.buses);
