@@ -80,6 +80,25 @@ export const Login: React.FC = () => {
     }
   };
 
+  const handleGuestLogin = async () => {
+    setError('');
+    setLoading(true);
+
+    try {
+      // The backend expects role: 'admin' since this is the admin portal
+      const response = await api.post('/auth/guest-login', { role: 'admin' });
+      const { access_token, refresh_token, user } = response.data;
+      
+      setAuth(access_token, refresh_token, user);
+      navigate('/');
+    } catch (err: any) {
+      console.error('Guest login error:', err);
+      setError(err.response?.data?.message || 'Guest login failed.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <div style={{
       display: 'flex', 
@@ -172,7 +191,7 @@ export const Login: React.FC = () => {
               
               <button 
                 type="button"
-                onClick={handleLogin} 
+                onClick={handleGuestLogin} 
                 style={{ 
                   backgroundColor: 'transparent', 
                   color: '#2170B5', 
