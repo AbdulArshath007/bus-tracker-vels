@@ -12,6 +12,10 @@ export const ChatModeration: React.FC = () => {
   const [announcement, setAnnouncement] = useState('');
   const [showAddRoomModal, setShowAddRoomModal] = useState(false);
   const [newRoomName, setNewRoomName] = useState('');
+  
+  const [showMembersModal, setShowMembersModal] = useState(false);
+  const [drivers, setDrivers] = useState<any[]>([]);
+  const [selectedDriverToAdd, setSelectedDriverToAdd] = useState('');
 
   useEffect(() => {
     // Fetch rooms from backend ChatController
@@ -102,6 +106,35 @@ export const ChatModeration: React.FC = () => {
     setSelectedRoom(newRoom.id);
   };
 
+  const openMembersModal = async () => {
+    setShowMembersModal(true);
+    try {
+      const res = await api.get('/users?role=driver');
+      setDrivers(res.data.data || res.data);
+      if (res.data.data?.length > 0) {
+        setSelectedDriverToAdd(res.data.data[0].id);
+      }
+    } catch (e) {
+      console.error(e);
+    }
+  };
+
+  const handleAddMember = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!selectedDriverToAdd || !selectedRoom) return;
+    try {
+      await api.post(`/chat-rooms/${selectedRoom}/members`, {
+        user_id: selectedDriverToAdd,
+        role: 'driver'
+      });
+      alert('Driver added to chat successfully!');
+      setShowMembersModal(false);
+    } catch (e: any) {
+      console.error(e);
+      alert(e.response?.data?.message || 'Failed to add driver');
+    }
+  };
+
   return (
     <div style={{ display: 'flex', height: 'calc(100vh - 120px)', gap: '1.5rem' }}>
       
@@ -134,8 +167,9 @@ export const ChatModeration: React.FC = () => {
       <div className="card" style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
         {selectedRoom ? (
           <>
-            <div style={{ paddingBottom: '1rem', borderBottom: '1px solid var(--border-color)', marginBottom: '1rem' }}>
-              <h3 style={{ fontSize: '1.25rem' }}>Moderating Room: {rooms.find(r => r.id === selectedRoom)?.name}</h3>
+            <div style={{ paddingBottom: '1rem', borderBottom: '1px solid var(--border-color)', marginBottom: '1rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <h3 style={{ fontSize: '1.25rem', margin: 0 }}>Moderating Room: {rooms.find(r => r.id === selectedRoom)?.name}</h3>
+              <button className="outline" onClick={openMembersModal}>Add Driver to Chat</button>
             </div>
             
             <div style={{ flex: 1, overflowY: 'auto', display: 'flex', flexDirection: 'column-reverse', gap: '1rem' }}>
@@ -195,6 +229,35 @@ export const ChatModeration: React.FC = () => {
               <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.5rem', marginTop: '1rem' }}>
                 <button type="button" className="outline" onClick={() => setShowAddRoomModal(false)}>Cancel</button>
                 <button type="submit" className="primary">Create</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Manage Members Modal */}
+      {showMembersModal && (
+        <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000 }}>
+          <div className="card" style={{ width: '400px' }}>
+            <h3 style={{ marginBottom: '1rem' }}>Add Driver to {rooms.find(r => r.id === selectedRoom)?.name}</h3>
+            <form onSubmit={handleAddMember} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+              <div>
+                <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.875rem' }}>Select Driver</label>
+                <select 
+                  value={selectedDriverToAdd} 
+                  onChange={e => setSelectedDriverToAdd(e.target.value)} 
+                  required 
+                  style={{ width: '100%', padding: '0.5rem', borderRadius: '4px', border: '1px solid var(--border-color)', backgroundColor: 'var(--bg-color)', color: 'var(--text-main)' }}
+                >
+                  <option value="" disabled>-- Select a driver --</option>
+                  {drivers.map(d => (
+                    <option key={d.id} value={d.id}>{d.full_name || d.email}</option>
+                  ))}
+                </select>
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.5rem', marginTop: '1rem' }}>
+                <button type="button" className="outline" onClick={() => setShowMembersModal(false)}>Cancel</button>
+                <button type="submit" className="primary">Add to Chat</button>
               </div>
             </form>
           </div>

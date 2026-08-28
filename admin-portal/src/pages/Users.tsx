@@ -226,7 +226,7 @@ export const Users: React.FC = () => {
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [newUserName, setNewUserName] = useState('');
   const [newUserEmail, setNewUserEmail] = useState('');
-  const [newUserPassword, setNewUserPassword] = useState('');
+  const [newUserPhone, setNewUserPhone] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState('');
 
@@ -238,13 +238,14 @@ export const Users: React.FC = () => {
       await api.post('/users', {
         full_name: newUserName,
         email: newUserEmail,
-        password: newUserPassword,
+        password: newUserPhone, // Using phone as temporary password
+        phone: newUserPhone,
         role: activeTab === 'students' ? 'student' : 'driver'
       });
       setIsAddModalOpen(false);
       setNewUserName('');
       setNewUserEmail('');
-      setNewUserPassword('');
+      setNewUserPhone('');
       // Refresh list
       const res = await api.get(`/users?role=${activeTab === 'students' ? 'student' : 'driver'}`);
       setUsers(res.data.data);
@@ -323,13 +324,13 @@ export const Users: React.FC = () => {
                 />
               </div>
               <div>
-                <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 500 }}>Temporary Password</label>
+                <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 500 }}>Phone Number</label>
                 <input 
-                  type="password" 
-                  value={newUserPassword} 
-                  onChange={e => setNewUserPassword(e.target.value)} 
+                  type="tel" 
+                  value={newUserPhone} 
+                  onChange={e => setNewUserPhone(e.target.value)} 
                   required 
-                  minLength={8}
+                  minLength={10}
                   style={{ width: '100%', padding: '0.5rem', borderRadius: '4px', border: '1px solid var(--border-color)', backgroundColor: 'var(--bg-color)', color: 'var(--text-main)' }}
                 />
               </div>

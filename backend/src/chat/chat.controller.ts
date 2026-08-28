@@ -34,6 +34,11 @@ class AddMemberDto {
   @IsNotEmpty()
   @IsUUID()
   user_id: string;
+
+  @ApiProperty({ enum: ['student', 'driver'], required: false })
+  @IsOptional()
+  @IsString()
+  role?: string;
 }
 
 @ApiTags('chat')
@@ -67,9 +72,9 @@ export class ChatController {
   @Post(':id/members')
   @Roles('admin')
   @HttpCode(HttpStatus.CREATED)
-  @ApiOperation({ summary: 'Add student to chat room (admin)' })
+  @ApiOperation({ summary: 'Add member to chat room (admin)' })
   addMember(@Param('id') id: string, @Body() dto: AddMemberDto) {
-    return this.chatService.addMember(id, dto.user_id, 'student');
+    return this.chatService.addMember(id, dto.user_id, dto.role || 'student');
   }
 
   @Delete(':id/members/:userId')

@@ -118,12 +118,10 @@ export class GpsGateway implements OnGatewayConnection, OnGatewayDisconnect {
       // Join socket.io rooms
       if (user.role === 'admin') {
         socket.join('admin:all');
-        // Join all 12 chat rooms
-        const memberships = await this.memberRepo.find({
-          where: { userId: user.id },
-        });
-        for (const m of memberships) {
-          socket.join(`chat:${m.roomId}`);
+        // Admins should join ALL chat rooms automatically
+        const rooms = await this.userRepo.manager.query('SELECT id FROM chat_rooms');
+        for (const r of rooms) {
+          socket.join(`chat:${r.id}`);
         }
       } else {
         if (busId) socket.join(`bus:${busId}`);
