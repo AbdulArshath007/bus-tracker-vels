@@ -1,0 +1,46 @@
+services:
+  - type: web
+    name: vels-backend
+    env: node
+    region: singapore # or ohio, frankfurt, oregon
+    rootDir: backend
+    buildCommand: npm install && npm run build
+    startCommand: npm run start:prod
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 10000
+      - key: DB_HOST
+        fromDatabase:
+          name: vels-db
+          property: host
+      - key: DB_PORT
+        fromDatabase:
+          name: vels-db
+          property: port
+      - key: DB_USER
+        fromDatabase:
+          name: vels-db
+          property: user
+      - key: DB_PASSWORD
+        fromDatabase:
+          name: vels-db
+          property: password
+      - key: DB_NAME
+        fromDatabase:
+          name: vels-db
+          property: database
+      - key: JWT_SECRET
+        generateValue: true
+      - key: JWT_REFRESH_SECRET
+        generateValue: true
+      - key: CORS_ORIGINS
+        value: "https://abdularshath007.github.io,*"
+
+databases:
+  - name: vels-db
+    region: singapore # Match the web service region
+    plan: free # Can upgrade later if needed
+    databaseName: vels_bustrack
+    user: vels_admin
