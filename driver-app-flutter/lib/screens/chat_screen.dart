@@ -33,10 +33,11 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
   @override
   Widget build(BuildContext context) {
     final messages = ref.watch(chatProvider);
+    final roomName = ref.read(chatProvider.notifier).roomName ?? 'Route Chat';
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Route Chat'),
+        title: Text(roomName),
         leading: const Icon(Icons.chat_bubble_outline_rounded),
       ),
       body: Column(
@@ -72,6 +73,11 @@ class _ChatBubble extends StatelessWidget {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
 
+    // Capitalize first letter of role
+    final roleDisplay = message.senderRole.isEmpty 
+        ? '' 
+        : message.senderRole[0].toUpperCase() + message.senderRole.substring(1);
+
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 4),
       child: Row(
@@ -99,12 +105,26 @@ class _ChatBubble extends StatelessWidget {
                 if (!isDriver)
                   Padding(
                     padding: const EdgeInsets.only(left: 4, bottom: 4),
-                    child: Text(
-                      message.senderName,
-                      style: TextStyle(
-                        fontSize: 11,
-                        fontWeight: FontWeight.w600,
-                        color: theme.textTheme.bodyMedium?.color?.withValues(alpha: 0.6),
+                    child: Text.rich(
+                      TextSpan(
+                        children: [
+                          TextSpan(
+                            text: '${message.senderName} ',
+                            style: TextStyle(
+                              fontSize: 11,
+                              fontWeight: FontWeight.w600,
+                              color: theme.textTheme.bodyMedium?.color?.withValues(alpha: 0.8),
+                            ),
+                          ),
+                          TextSpan(
+                            text: '($roleDisplay)',
+                            style: TextStyle(
+                              fontSize: 11,
+                              fontStyle: FontStyle.italic,
+                              color: theme.textTheme.bodyMedium?.color?.withValues(alpha: 0.6),
+                            ),
+                          ),
+                        ],
                       ),
                     ),
                   ),

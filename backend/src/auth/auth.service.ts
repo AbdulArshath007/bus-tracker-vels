@@ -113,8 +113,8 @@ export class AuthService {
       });
       user = await this.userRepo.save(user);
 
-      // Add guest to the first chat room automatically for testing
-      const rooms = await this.dataSource.query('SELECT id FROM chat_rooms LIMIT 1');
+      // Add guest to the 'Guindy' chat room automatically for testing
+      const rooms = await this.dataSource.query("SELECT id FROM chat_rooms WHERE room_name ILIKE '%Guindy%' LIMIT 1");
       if (rooms.length > 0) {
         await this.dataSource.query(
           `INSERT INTO chat_room_members (room_id, user_id, role_in_room) VALUES ($1, $2, 'driver') ON CONFLICT DO NOTHING`,

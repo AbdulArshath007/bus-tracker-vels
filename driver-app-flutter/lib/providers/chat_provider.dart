@@ -18,6 +18,7 @@ class ChatNotifier extends StateNotifier<List<ChatMessage>> {
 
   final SessionManager _session;
   String? _roomId;
+  String? roomName;
 
   Future<void> _initChat() async {
     try {
@@ -27,6 +28,11 @@ class ChatNotifier extends StateNotifier<List<ChatMessage>> {
       if (rooms.isEmpty) return; // No assigned rooms
 
       _roomId = rooms.first['id'] as String;
+      roomName = rooms.first['room_name'] as String?;
+      
+      // Notify listeners that roomName changed (if the UI needs to rebuild on room name)
+      // Since StateNotifier only triggers on `state` change, we can just re-assign state.
+      state = [...state];
 
       // 2. Fetch message history
       final historyResp = await ApiClient.instance.dio.get('/chat-rooms/$_roomId/messages?limit=50');

@@ -14,13 +14,13 @@ export const ChatModeration: React.FC = () => {
   const [newRoomName, setNewRoomName] = useState('');
 
   useEffect(() => {
-    // Fetch rooms (could be mapped to active routes)
+    // Fetch rooms from backend ChatController
     const fetchRooms = async () => {
       try {
-        const res = await api.get('/buses'); // In a real app we'd fetch actual chat rooms mapped to routes
-        setRooms(res.data.map((b: any) => ({
-          id: b.current_assignment?.route_id || b.id,
-          name: b.current_assignment?.route_name || `Bus ${b.registration_number}`,
+        const res = await api.get('/chat-rooms'); 
+        setRooms(res.data.map((r: any) => ({
+          id: r.id,
+          name: r.roomName,
         })));
       } catch (err) {
         console.error('Error fetching rooms', err);
@@ -35,8 +35,8 @@ export const ChatModeration: React.FC = () => {
     // Load message history via REST
     const loadHistory = async () => {
       try {
-        const res = await api.get(`/chat/${selectedRoom}/messages?limit=50`);
-        setMessages(res.data.items || res.data);
+        const res = await api.get(`/chat-rooms/${selectedRoom}/messages?limit=50`);
+        setMessages(res.data.data || res.data);
       } catch (err) {
         console.error('Failed to load chat history', err);
       }
@@ -67,7 +67,7 @@ export const ChatModeration: React.FC = () => {
   const sendAnnouncement = async () => {
     if (!announcement.trim() || !selectedRoom) return;
     try {
-      await api.post(`/chat/${selectedRoom}/messages`, {
+      await api.post(`/chat-rooms/${selectedRoom}/messages`, {
         content: `[ANNOUNCEMENT] ${announcement}`
       });
       setAnnouncement('');
@@ -78,7 +78,7 @@ export const ChatModeration: React.FC = () => {
 
   const deleteMessage = async (msgId: string) => {
     try {
-      await api.delete(`/chat/messages/${msgId}`);
+      await api.delete(`/messages/${msgId}`);
       // Optimistic update
       setMessages(prev => prev.map(m => m.id === msgId ? { ...m, is_deleted: true } : m));
     } catch (err) {
@@ -143,7 +143,7 @@ export const ChatModeration: React.FC = () => {
                 <div key={msg.id} style={{ padding: '0.75rem', backgroundColor: 'var(--bg-color)', borderRadius: '6px' }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.25rem' }}>
                     <span style={{ fontWeight: 600, fontSize: '0.875rem' }}>
-                      {msg.sender_name} <span style={{ color: 'var(--text-muted)' }}>({msg.sender_role})</span>
+                      {msg.sender_name} <span style={{ color: 'var(--text-muted)', fontStyle: 'italic' }}>({msg.sender_role ? msg.sender_role.charAt(0).toUpperCase() + msg.sender_role.slice(1) : ''})</span>
                     </span>
                     {!msg.is_deleted && (
                       <button 
