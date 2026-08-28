@@ -73,8 +73,8 @@ import { HealthModule } from './health/health.module';
           NotificationLog, AuditLog, ScheduledJobLog,
         ],
         migrations: ['dist/database/migrations/*.js'],
-        migrationsRun: false, // Run migrations manually: npm run migration:run
-        synchronize: false,
+        migrationsRun: true, // Auto-run migrations on startup
+        synchronize: process.env.TYPEORM_SYNC === 'true',
         logging: cs.get<string>('app.nodeEnv') === 'development',
         ssl: cs.get<string>('app.nodeEnv') === 'production'
           ? { rejectUnauthorized: false }
