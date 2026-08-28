@@ -22,11 +22,11 @@ export const Users: React.FC = () => {
             api.get('/users?role=student'),
             api.get('/buses')
           ]);
-          setUsers(usersRes.data);
+          setUsers(usersRes.data.data);
           setBuses(busesRes.data);
         } else {
           const res = await api.get('/users?role=driver');
-          setUsers(res.data);
+          setUsers(res.data.data);
         }
       } catch (err) {
         console.error('Error fetching data', err);
@@ -223,13 +223,45 @@ export const Users: React.FC = () => {
     );
   };
 
+  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  const [newUserName, setNewUserName] = useState('');
+  const [newUserEmail, setNewUserEmail] = useState('');
+  const [newUserPassword, setNewUserPassword] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState('');
+
+  const handleCreateUser = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+    setSubmitError('');
+    try {
+      await api.post('/users', {
+        full_name: newUserName,
+        email: newUserEmail,
+        password: newUserPassword,
+        role: activeTab === 'students' ? 'student' : 'driver'
+      });
+      setIsAddModalOpen(false);
+      setNewUserName('');
+      setNewUserEmail('');
+      setNewUserPassword('');
+      // Refresh list
+      const res = await api.get(`/users?role=${activeTab === 'students' ? 'student' : 'driver'}`);
+      setUsers(res.data.data);
+    } catch (err: any) {
+      setSubmitError(err.response?.data?.message || 'Failed to create user');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   return (
     <div>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
         <h2 style={{ fontSize: '1.5rem' }}>{t('nav.users')}</h2>
         <div>
           {activeTab === 'students' && <button className="outline" style={{ marginRight: '1rem' }}>Import CSV</button>}
-          <button className="primary">Add New {activeTab === 'students' ? 'Student' : 'Driver'}</button>
+          <button className="primary" onClick={() => setIsAddModalOpen(true)}>Add New {activeTab === 'students' ? 'Student' : 'Driver'}</button>
         </div>
       </div>
 
@@ -254,6 +286,62 @@ export const Users: React.FC = () => {
         renderStudentsFolders()
       ) : (
         renderDriversTable()
+      )}
+
+      {/* Add User Modal */}
+      {isAddModalOpen && (
+        <div style={{
+          position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+          backgroundColor: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000
+        }}>
+          <div className="card" style={{ width: '100%', maxWidth: '400px', backgroundColor: 'var(--bg-surface)' }}>
+            <h3 style={{ marginTop: 0, marginBottom: '1.5rem' }}>Add New {activeTab === 'students' ? 'Student' : 'Driver'}</h3>
+            {submitError && (
+              <div style={{ backgroundColor: 'var(--color-danger)', color: 'white', padding: '0.75rem', borderRadius: '4px', marginBottom: '1rem', fontSize: '0.875rem' }}>
+                {submitError}
+              </div>
+            )}
+            <form onSubmit={handleCreateUser} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+              <div>
+                <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 500 }}>Full Name</label>
+                <input 
+                  type="text" 
+                  value={newUserName} 
+                  onChange={e => setNewUserName(e.target.value)} 
+                  required 
+                  style={{ width: '100%', padding: '0.5rem', borderRadius: '4px', border: '1px solid var(--border-color)', backgroundColor: 'var(--bg-color)', color: 'var(--text-main)' }}
+                />
+              </div>
+              <div>
+                <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 500 }}>Email Address</label>
+                <input 
+                  type="email" 
+                  value={newUserEmail} 
+                  onChange={e => setNewUserEmail(e.target.value)} 
+                  required 
+                  style={{ width: '100%', padding: '0.5rem', borderRadius: '4px', border: '1px solid var(--border-color)', backgroundColor: 'var(--bg-color)', color: 'var(--text-main)' }}
+                />
+              </div>
+              <div>
+                <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 500 }}>Temporary Password</label>
+                <input 
+                  type="password" 
+                  value={newUserPassword} 
+                  onChange={e => setNewUserPassword(e.target.value)} 
+                  required 
+                  minLength={8}
+                  style={{ width: '100%', padding: '0.5rem', borderRadius: '4px', border: '1px solid var(--border-color)', backgroundColor: 'var(--bg-color)', color: 'var(--text-main)' }}
+                />
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '1rem', marginTop: '1rem' }}>
+                <button type="button" className="outline" onClick={() => setIsAddModalOpen(false)}>Cancel</button>
+                <button type="submit" className="primary" disabled={isSubmitting}>
+                  {isSubmitting ? 'Saving...' : 'Save User'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
       )}
     </div>
   );

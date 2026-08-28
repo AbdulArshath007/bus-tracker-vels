@@ -86,6 +86,47 @@ export class AuthService {
     };
   }
 
+  // ── Guest Login ────────────────────────────────────────────────────────────
+  async guestLogin(
+    role: string,
+    ipAddress?: string,
+  ): Promise<{
+    access_token: string;
+    refresh_token: string;
+    expires_in: number;
+    user: Partial<User>;
+  }> {
+    const user = await this.userRepo.findOne({
+      where: { role: role as any, isActive: true },
+    });
+
+    if (!user) {
+      throw new UnauthorizedException(`No active user found for role ${role}`);
+    }
+
+    const tokens = await this.issueTokens(user);
+
+    await this.auditService.log({
+      actorId: user.id,
+      actorRole: user.role,
+      action: 'auth.guest_login',
+      targetType: 'user',
+      targetId: user.id,
+      ipAddress,
+    });
+
+    return {
+      ...tokens,
+      user: {
+        id: user.id,
+        role: user.role,
+        fullName: user.fullName,
+        languagePref: user.languagePref,
+        themePref: user.themePref,
+      },
+    };
+  }
+
   // ── Refresh ────────────────────────────────────────────────────────────────
   async refresh(rawToken: string): Promise<{
     access_token: string;

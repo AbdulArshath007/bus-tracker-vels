@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Network Security Config
+  ─────────────────────────────────────────────────────────────────
+  • Prevents cleartext (HTTP) traffic to all domains.
+  • Pins the API server certificate (replace SHA-256 with real pin).
+  • Debug overrides intentionally left restrictive.
+-->
+<network-security-config>
+
+    <!-- Block all cleartext traffic globally -->
+    <base-config cleartextTrafficPermitted="false">
+        <trust-anchors>
+            <certificates src="system" />
+        </trust-anchors>
+    </base-config>
+
+    <!-- API server: pin the leaf certificate -->
+    <domain-config cleartextTrafficPermitted="false">
+        <domain includeSubdomains="true">api.vels-bustracker.com</domain>
+        <pin-set expiration="2027-01-01">
+            <!--
+              Replace with the real SHA-256 SPKI digest of your server cert:
+                openssl s_client -connect api.vels-bustracker.com:443 | \
+                  openssl x509 -pubkey -noout | \
+                  openssl pkey -pubin -outform der | \
+                  openssl dgst -sha256 -binary | base64
+            -->
+            <pin digest="SHA-256">AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</pin>
+            <!-- Backup pin (intermediate CA or next cert) -->
+            <pin digest="SHA-256">BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB=</pin>
+        </pin-set>
+        <trust-anchors>
+            <certificates src="system" />
+        </trust-anchors>
+    </domain-config>
+
+</network-security-config>

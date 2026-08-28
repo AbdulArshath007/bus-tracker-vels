@@ -1,0 +1,62 @@
+name: vels_driver
+description: Vels University Bus Tracker – Driver App
+publish_to: "none"
+version: 1.0.0+1
+
+environment:
+  sdk: ">=3.3.0 <4.0.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+  # State management
+  flutter_riverpod: ^2.5.1
+
+  # Secure token storage (AES-encrypted Keystore/Keychain)
+  flutter_secure_storage: ^9.2.2
+
+  # HTTP client with interceptors
+  dio: ^5.4.3+1
+
+  # Socket.IO
+  socket_io_client: ^2.0.3+1
+
+  # Location / GPS
+  geolocator: ^12.0.0
+  permission_handler: ^11.3.1
+  flutter_map: ^6.1.0
+  latlong2: ^0.9.0
+
+  # Foreground service (keeps GPS alive when backgrounded)
+  flutter_foreground_task: ^8.5.0
+
+  # Navigation
+  go_router: ^14.1.4
+
+  # JSON helpers
+  freezed_annotation: ^2.4.4
+  json_annotation: ^4.9.0
+
+  # UI helpers
+  google_fonts: ^6.2.1
+  skeletonizer: any
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^4.0.0
+  build_runner: ^2.4.11
+  freezed: ^2.5.7
+  json_serializable: ^6.8.0
+  flutter_launcher_icons: ^0.13.1
+
+flutter:
+  uses-material-design: true
+  assets:
+    - assets/icon/
+
+flutter_launcher_icons:
+  android: "launcher_icon"
+  ios: false
+  image_path: "assets/icon/app_icon.png"

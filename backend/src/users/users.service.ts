@@ -32,6 +32,7 @@ export class CreateUserDto {
 export class UpdateUserDto {
   @ApiProperty({ required: false }) @IsOptional() full_name?: string;
   @ApiProperty({ required: false }) @IsOptional() phone?: string;
+  @ApiProperty({ required: false }) @IsOptional() @IsEmail() email?: string;
   @ApiProperty({ required: false }) @IsOptional() language_pref?: 'en' | 'ta';
   @ApiProperty({ required: false }) @IsOptional() theme_pref?: 'light' | 'dark';
   @ApiProperty({ required: false }) @IsOptional() fcm_token?: string;
@@ -108,8 +109,16 @@ export class UsersService {
 
   async updateSelf(userId: string, dto: UpdateUserDto): Promise<User> {
     const user = await this.repo.findOneOrFail({ where: { id: userId } });
-    if (dto.full_name) user.fullName = dto.full_name;
-    if (dto.phone) user.phone = dto.phone;
+    if (dto.full_name !== undefined) user.fullName = dto.full_name;
+    if (dto.phone !== undefined) user.phone = dto.phone;
+    if (dto.email !== undefined) {
+      // Check uniqueness before saving
+      const existing = await this.repo.findOne({ where: { email: dto.email } });
+      if (existing && existing.id !== userId) {
+        throw new ConflictException('Email already in use.');
+      }
+      user.email = dto.email;
+    }
     if (dto.language_pref) user.languagePref = dto.language_pref;
     if (dto.theme_pref) user.themePref = dto.theme_pref;
     if (dto.fcm_token !== undefined) user.fcmToken = dto.fcm_token;

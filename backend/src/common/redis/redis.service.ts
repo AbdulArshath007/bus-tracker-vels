@@ -24,9 +24,9 @@ export class RedisService implements OnModuleDestroy {
       host: configService.get<string>('redis.host'),
       port: configService.get<number>('redis.port'),
       password: configService.get<string>('redis.password') || undefined,
-      lazyConnect: false,
+      lazyConnect: true,
       enableOfflineQueue: false,
-      retryStrategy: (times) => Math.min(times * 100, 3000),
+      retryStrategy: null,
     });
 
     this.client.on('error', (err) => {

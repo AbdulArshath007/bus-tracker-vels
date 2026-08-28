@@ -169,6 +169,24 @@ export const Login: React.FC = () => {
               <button type="submit" style={{ backgroundColor: '#2170B5', color: 'white', border: 'none', padding: '0.75rem', borderRadius: '4px', fontWeight: 600, marginTop: '1rem', cursor: 'pointer' }} disabled={loading}>
                 {loading ? '...' : 'Log In'}
               </button>
+              
+              <button 
+                type="button"
+                onClick={handleLogin} 
+                style={{ 
+                  backgroundColor: 'transparent', 
+                  color: '#2170B5', 
+                  border: 'none', 
+                  padding: '0.5rem', 
+                  fontWeight: 600, 
+                  marginTop: '0.5rem', 
+                  cursor: 'pointer',
+                  textDecoration: 'underline'
+                }} 
+                disabled={loading}
+              >
+                Continue as Guest
+              </button>
             </form>
           </div>
         </div>

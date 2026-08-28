@@ -38,6 +38,15 @@ export class AuthController {
     return this.authService.login(dto.email, dto.password, ip);
   }
 
+  @Post('guest-login')
+  @HttpCode(HttpStatus.OK)
+  @Throttle({ auth: { limit: 10, ttl: 900000 } })
+  @ApiOperation({ summary: 'Guest login for development' })
+  async guestLogin(@Body() dto: { role: string }, @Req() req: Request) {
+    const ip = (req.headers['x-forwarded-for'] as string) || req.ip;
+    return this.authService.guestLogin(dto.role, ip);
+  }
+
   @Post('refresh')
   @HttpCode(HttpStatus.OK)
   @Throttle({ auth: { limit: 20, ttl: 900000 } })
