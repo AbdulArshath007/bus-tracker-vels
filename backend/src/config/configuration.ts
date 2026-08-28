@@ -8,6 +8,7 @@ export const appConfig = registerAs('app', () => ({
 }));
 
 export const dbConfig = registerAs('db', () => ({
+  url: process.env.DATABASE_URL || undefined,
   host: process.env.DB_HOST || 'localhost',
   port: parseInt(process.env.DB_PORT || '5432', 10),
   name: process.env.DB_NAME || 'bustrack',

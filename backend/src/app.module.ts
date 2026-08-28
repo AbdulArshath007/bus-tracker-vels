@@ -61,11 +61,15 @@ import { HealthModule } from './health/health.module';
       imports: [ConfigModule],
       useFactory: (cs: ConfigService) => ({
         type: 'postgres',
-        host: cs.get<string>('db.host'),
-        port: cs.get<number>('db.port'),
-        database: cs.get<string>('db.name'),
-        username: cs.get<string>('db.user'),
-        password: cs.get<string>('db.password'),
+        ...(cs.get<string>('db.url')
+          ? { url: cs.get<string>('db.url') }
+          : {
+              host: cs.get<string>('db.host'),
+              port: cs.get<number>('db.port'),
+              database: cs.get<string>('db.name'),
+              username: cs.get<string>('db.user'),
+              password: cs.get<string>('db.password'),
+            }),
         entities: [
           User, Bus, BusAssignment, Route, Stop,
           ChatRoom, ChatRoomMember, Message, Attachment,
