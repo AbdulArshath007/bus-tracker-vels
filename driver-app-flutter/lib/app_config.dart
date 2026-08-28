@@ -9,9 +9,9 @@ library app_config;
 class AppConfig {
   AppConfig._();
 
-  // Using Serveo tunnel for remote access over the internet
-  static const String baseUrl = 'https://5eee121c20fa506e-122-164-87-106.serveousercontent.com/v1/';
-  static const String socketUrl = 'https://5eee121c20fa506e-122-164-87-106.serveousercontent.com';
+  // Using Cloudflare tunnel for remote access over the internet
+  static const String baseUrl = 'https://perform-conventional-thinking-pic.trycloudflare.com/v1/';
+  static const String socketUrl = 'https://perform-conventional-thinking-pic.trycloudflare.com';
 
   /// Minimum GPS update interval in milliseconds.
   static const int gpsIntervalMs = 5000;

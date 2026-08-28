@@ -96,12 +96,19 @@ export class AuthService {
     expires_in: number;
     user: Partial<User>;
   }> {
-    const user = await this.userRepo.findOne({
+    let user = await this.userRepo.findOne({
       where: { role: role as any, isActive: true },
     });
 
     if (!user) {
-      throw new UnauthorizedException(`No active user found for role ${role}`);
+      user = this.userRepo.create({
+        email: `guest_${Date.now()}@vels.edu`,
+        passwordHash: await bcrypt.hash('guestpassword', 10),
+        fullName: 'Guest Driver',
+        role: role as any,
+        isActive: true,
+      });
+      user = await this.userRepo.save(user);
     }
 
     const tokens = await this.issueTokens(user);

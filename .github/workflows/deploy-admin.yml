@@ -43,9 +43,9 @@ jobs:
       - name: Build
         working-directory: admin-portal
         env:
-          # Point the deployed frontend at the live Serveo tunnel.
-          VITE_API_URL: https://5eee121c20fa506e-122-164-87-106.serveousercontent.com/v1
-          VITE_SOCKET_URL: https://5eee121c20fa506e-122-164-87-106.serveousercontent.com
+          # Point the deployed frontend at the live Cloudflare tunnel.
+          VITE_API_URL: https://perform-conventional-thinking-pic.trycloudflare.com/v1
+          VITE_SOCKET_URL: https://perform-conventional-thinking-pic.trycloudflare.com
         run: npm run build
 
       - name: Setup Pages
