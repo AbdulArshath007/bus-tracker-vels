@@ -93,10 +93,13 @@ class VelsDriverApp extends ConsumerWidget {
   }
 }
 
-/// Makes GoRouter react to auth state changes.
+/// Makes GoRouter react to auth state changes safely.
 class _AuthStateListenable extends ChangeNotifier {
   _AuthStateListenable(Ref ref) {
-    ref.listen<AuthState>(authProvider, (_, __) => notifyListeners());
+    ref.listen<AuthState>(authProvider, (_, __) {
+      // Defer GoRouter redirect to avoid synchronous tree mutations during build
+      Future.microtask(() => notifyListeners());
+    });
   }
 }
 

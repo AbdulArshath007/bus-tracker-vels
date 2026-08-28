@@ -69,65 +69,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     final driverName = user?.name ?? 'Driver';
 
     return Scaffold(
-      // ── Drawer replaces AppBar buttons ──────────────────────────
-      drawer: Drawer(
-        child: Column(
-          children: [
-            UserAccountsDrawerHeader(
-              accountName: Text(
-                driverName,
-                style: const TextStyle(
-                    fontWeight: FontWeight.w700, fontSize: 16),
-              ),
-              accountEmail: Text(user?.email ?? ''),
-              currentAccountPicture: CircleAvatar(
-                backgroundColor: Colors.white.withValues(alpha: 0.25),
-                child: Text(
-                  driverName.isNotEmpty
-                      ? driverName[0].toUpperCase()
-                      : 'D',
-                  style: TextStyle(
-                    fontSize: 28,
-                    fontWeight: FontWeight.w700,
-                    color: theme.primaryColor,
-                  ),
-                ),
-              ),
-              decoration: BoxDecoration(color: theme.primaryColor),
-            ),
-            ListTile(
-              leading: const Icon(Icons.settings_rounded),
-              title: const Text('Settings'),
-              onTap: () {
-                Navigator.pop(context); // close drawer
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                      builder: (_) => const SettingsScreen()),
-                );
-              },
-            ),
-            const Spacer(),
-            const Divider(height: 1),
-            ListTile(
-              leading: Icon(Icons.logout_rounded,
-                  color: theme.colorScheme.error),
-              title: Text(
-                'Logout',
-                style: TextStyle(
-                    color: theme.colorScheme.error,
-                    fontWeight: FontWeight.w600),
-              ),
-              onTap: () async {
-                Navigator.pop(context); // close drawer
-                await ref.read(authProvider.notifier).logout();
-              },
-            ),
-            const SizedBox(height: 16),
-          ],
-        ),
-      ),
-
       appBar: AppBar(
         title: Column(
           crossAxisAlignment: CrossAxisAlignment.start,

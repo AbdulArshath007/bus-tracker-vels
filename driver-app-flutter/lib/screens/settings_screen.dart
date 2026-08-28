@@ -283,6 +283,8 @@ class _EditDialogState extends State<_EditDialog> {
     try {
       await widget.onSave(_controller.text);
       if (!mounted) return;
+      setState(() => _saving = false);
+      
       // IMPORTANT: Capture messenger BEFORE pop.
       // After Navigator.pop the dialog element begins deactivating.
       // Calling ScaffoldMessenger.of(context) on a deactivating element

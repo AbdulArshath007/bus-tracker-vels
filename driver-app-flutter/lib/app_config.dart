@@ -10,8 +10,8 @@ class AppConfig {
   AppConfig._();
 
   // Using Cloudflare tunnel for remote access over the internet
-  static const String baseUrl = 'https://perform-conventional-thinking-pic.trycloudflare.com/v1/';
-  static const String socketUrl = 'https://perform-conventional-thinking-pic.trycloudflare.com';
+  static const String baseUrl = 'https://vels-backend-3k26.onrender.com/v1/';
+  static const String socketUrl = 'https://vels-backend-3k26.onrender.com';
 
   /// Minimum GPS update interval in milliseconds.
   static const int gpsIntervalMs = 5000;
