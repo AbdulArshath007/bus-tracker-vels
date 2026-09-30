@@ -44,8 +44,8 @@ jobs:
         working-directory: admin-portal
         env:
           # Point the deployed frontend at the live Cloudflare tunnel.
-          VITE_API_URL: https://perform-conventional-thinking-pic.trycloudflare.com/v1
-          VITE_SOCKET_URL: https://perform-conventional-thinking-pic.trycloudflare.com
+          VITE_API_URL: https://vels-backend-3k26.onrender.com/v1
+          VITE_SOCKET_URL: https://vels-backend-3k26.onrender.com
         run: npm run build
 
       - name: Setup Pages
