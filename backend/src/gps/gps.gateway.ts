@@ -20,6 +20,7 @@ import { GpsPing } from '../rides/entities/gps-ping.entity';
 import { ChatRoomMember } from '../chat/entities/chat-room-member.entity';
 import { RedisService } from '../common/redis/redis.service';
 import { ConfigService } from '@nestjs/config';
+import { setChatGateway } from '../chat/chat.service';
 
 interface GpsPingPayload {
   ride_id: string;
@@ -63,7 +64,9 @@ export class GpsGateway implements OnGatewayConnection, OnGatewayDisconnect {
     @InjectRepository(GpsPing) private pingRepo: Repository<GpsPing>,
     @InjectRepository(ChatRoomMember)
     private memberRepo: Repository<ChatRoomMember>,
-  ) {}
+  ) {
+    setChatGateway(this);
+  }
 
   // ── Connection ─────────────────────────────────────────────────────────────
   async handleConnection(socket: Socket) {
@@ -142,16 +145,20 @@ export class GpsGateway implements OnGatewayConnection, OnGatewayDisconnect {
     if (!meta) return;
 
     if (meta.role === 'driver' && meta.busId) {
-      // Mark location stale and emit last-seen to the bus room
-      const loc = await this.redisService.getLocation(meta.busId);
-      if (loc) {
-        await this.redisService.markLocationStale(meta.busId);
-        this.server.to(`bus:${meta.busId}`).emit('bus.last_seen', {
-          bus_id: meta.busId,
-          last_latitude: loc.latitude,
-          last_longitude: loc.longitude,
-          last_seen_at: loc.timestamp,
-        });
+      try {
+        // Mark location stale and emit last-seen to the bus room
+        const loc = await this.redisService.getLocation(meta.busId);
+        if (loc) {
+          await this.redisService.markLocationStale(meta.busId);
+          this.server.to(`bus:${meta.busId}`).emit('bus.last_seen', {
+            bus_id: meta.busId,
+            last_latitude: loc.latitude,
+            last_longitude: loc.longitude,
+            last_seen_at: loc.timestamp,
+          });
+        }
+      } catch (err: any) {
+        this.logger.error(`Error in handleDisconnect for driver ${meta.userId}: ${err.message}`);
       }
     }
 
@@ -305,6 +312,25 @@ export class GpsGateway implements OnGatewayConnection, OnGatewayDisconnect {
     });
   }
 
+  // ── Join Chat Room dynamically ──────────────────────────────────────────────
+  @SubscribeMessage('chat.join')
+  async handleChatJoin(@ConnectedSocket() socket: Socket, @MessageBody() data: { room_id: string }) {
+    const meta = this.socketMeta.get(socket.id);
+    if (!meta) return;
+
+    // Verify membership
+    if (meta.role !== 'admin') {
+      const membership = await this.memberRepo.findOne({
+        where: { userId: meta.userId, roomId: data.room_id },
+      });
+      if (!membership) return; // not authorized
+    }
+
+    // Join the socket room
+    socket.join(`chat:${data.room_id}`);
+    this.logger.log(`Socket ${socket.id} joined chat:${data.room_id}`);
+  }
+
   // ── Emit helpers (called by RidesService and ChatService) ─────────────────
   emitToRoom(room: string, event: string, payload: unknown) {
     this.server.to(room).emit(event, payload);
@@ -316,6 +342,7 @@ export class GpsGateway implements OnGatewayConnection, OnGatewayDisconnect {
   }
 
   emitToChat(roomId: string, event: string, payload: unknown) {
+    console.log(`[GpsGateway] Emitting ${event} to room chat:${roomId}`, payload);
     this.server.to(`chat:${roomId}`).emit(event, payload);
   }
 

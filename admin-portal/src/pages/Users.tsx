@@ -64,22 +64,25 @@ export const Users: React.FC = () => {
           ) : (
             users.map((user) => (
               <tr key={user.id}>
-                <td>{user.full_name}</td>
+                <td>{user.fullName || user.full_name}</td>
                 <td>{user.email}</td>
                 <td style={{ textTransform: 'capitalize' }}>{user.role}</td>
                 <td>
                   <span style={{ 
                     padding: '0.25rem 0.5rem', 
                     borderRadius: '9999px', 
-                    backgroundColor: user.is_active ? 'var(--color-success)' : 'var(--color-danger)', 
+                    backgroundColor: (user.isActive ?? user.is_active) ? 'var(--color-success)' : 'var(--color-danger)', 
                     color: 'white',
                     fontSize: '0.75rem'
                   }}>
-                    {user.is_active ? 'Active' : 'Inactive'}
+                    {(user.isActive ?? user.is_active) ? 'Active' : 'Inactive'}
                   </span>
                 </td>
                 <td>
-                  <button className="outline" style={{ padding: '0.25rem 0.5rem', fontSize: '0.75rem' }}>Edit</button>
+                  <div style={{ display: 'flex', gap: '0.5rem' }}>
+                    <button className="outline" style={{ padding: '0.25rem 0.5rem', fontSize: '0.75rem' }} onClick={() => openEditModal(user)}>Edit</button>
+                    <button className="danger outline" style={{ padding: '0.25rem 0.5rem', fontSize: '0.75rem' }} onClick={() => { openEditModal(user); setConfirmDeleteOpen(true); }}>Delete</button>
+                  </div>
                 </td>
               </tr>
             ))
@@ -191,22 +194,25 @@ export const Users: React.FC = () => {
                         ) : (
                           busStudents.map(student => (
                             <tr key={student.id}>
-                              <td>{student.full_name}</td>
+                              <td>{student.fullName || student.full_name}</td>
                               <td>{student.email}</td>
                               <td>
                                 <span style={{ 
                                   padding: '0.25rem 0.5rem', 
                                   borderRadius: '9999px', 
-                                  backgroundColor: student.is_active ? 'var(--color-success)' : 'var(--color-danger)', 
+                                  backgroundColor: (student.isActive ?? student.is_active) ? 'var(--color-success)' : 'var(--color-danger)', 
                                   color: 'white',
                                   fontSize: '0.75rem'
                                 }}>
-                                  {student.is_active ? 'Active' : 'Inactive'}
+                                  {(student.isActive ?? student.is_active) ? 'Active' : 'Inactive'}
                                 </span>
                               </td>
-                              <td>
-                                <button className="outline" style={{ padding: '0.25rem 0.5rem', fontSize: '0.75rem' }}>Edit</button>
-                              </td>
+                               <td>
+                                <div style={{ display: 'flex', gap: '0.5rem' }}>
+                                  <button className="outline" style={{ padding: '0.25rem 0.5rem', fontSize: '0.75rem' }} onClick={() => openEditModal(student)}>Edit</button>
+                                  <button className="danger outline" style={{ padding: '0.25rem 0.5rem', fontSize: '0.75rem' }} onClick={() => { openEditModal(student); setConfirmDeleteOpen(true); }}>Delete</button>
+                                </div>
+                               </td>
                             </tr>
                           ))
                         )}
@@ -229,6 +235,24 @@ export const Users: React.FC = () => {
   const [newUserPhone, setNewUserPhone] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState('');
+
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [editUserId, setEditUserId] = useState('');
+  const [editUserName, setEditUserName] = useState('');
+  const [editUserEmail, setEditUserEmail] = useState('');
+  const [editUserPhone, setEditUserPhone] = useState('');
+  const [editUserIsActive, setEditUserIsActive] = useState(true);
+  const [isDeletingUser, setIsDeletingUser] = useState(false);
+  const [confirmDeleteOpen, setConfirmDeleteOpen] = useState(false);
+
+  const openEditModal = (user: any) => {
+    setEditUserId(user.id);
+    setEditUserName(user.fullName || user.full_name || '');
+    setEditUserEmail(user.email);
+    setEditUserPhone(user.phone || '');
+    setEditUserIsActive(user.isActive ?? user.is_active ?? true);
+    setIsEditModalOpen(true);
+  };
 
   const handleCreateUser = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -253,6 +277,42 @@ export const Users: React.FC = () => {
       setSubmitError(err.response?.data?.message || 'Failed to create user');
     } finally {
       setIsSubmitting(false);
+    }
+  };
+
+  const handleEditUser = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+    setSubmitError('');
+    try {
+      await api.patch(`/users/${editUserId}`, {
+        full_name: editUserName,
+        email: editUserEmail,
+        phone: editUserPhone,
+        is_active: editUserIsActive,
+      });
+      setIsEditModalOpen(false);
+      const res = await api.get(`/users?role=${activeTab === 'students' ? 'student' : 'driver'}`);
+      setUsers(res.data.data);
+    } catch (err: any) {
+      setSubmitError(err.response?.data?.message || 'Failed to update user');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleDeleteUser = async () => {
+    setIsDeletingUser(true);
+    try {
+      await api.delete(`/users/${editUserId}`);
+      setIsEditModalOpen(false);
+      setConfirmDeleteOpen(false);
+      const res = await api.get(`/users?role=${activeTab === 'students' ? 'student' : 'driver'}`);
+      setUsers(res.data.data);
+    } catch (err: any) {
+      setSubmitError(err.response?.data?.message || 'Failed to delete user');
+    } finally {
+      setIsDeletingUser(false);
     }
   };
 
@@ -341,6 +401,108 @@ export const Users: React.FC = () => {
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* Edit User Modal */}
+      {isEditModalOpen && (
+        <div style={{
+          position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+          backgroundColor: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000
+        }}>
+          <div className="card" style={{ width: '100%', maxWidth: '400px', backgroundColor: 'var(--bg-surface)' }}>
+            <h3 style={{ marginTop: 0, marginBottom: '1.5rem' }}>Edit {activeTab === 'students' ? 'Student' : 'Driver'}</h3>
+            {submitError && (
+              <div style={{ backgroundColor: 'var(--color-danger)', color: 'white', padding: '0.75rem', borderRadius: '4px', marginBottom: '1rem', fontSize: '0.875rem' }}>
+                {submitError}
+              </div>
+            )}
+            <form onSubmit={handleEditUser} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+              <div>
+                <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 500 }}>Full Name</label>
+                <input 
+                  type="text" 
+                  value={editUserName} 
+                  onChange={e => setEditUserName(e.target.value)} 
+                  required 
+                  style={{ width: '100%', padding: '0.5rem', borderRadius: '4px', border: '1px solid var(--border-color)', backgroundColor: 'var(--bg-color)', color: 'var(--text-main)' }}
+                />
+              </div>
+              <div>
+                <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 500 }}>Email Address</label>
+                <input 
+                  type="email" 
+                  value={editUserEmail} 
+                  onChange={e => setEditUserEmail(e.target.value)} 
+                  required 
+                  style={{ width: '100%', padding: '0.5rem', borderRadius: '4px', border: '1px solid var(--border-color)', backgroundColor: 'var(--bg-color)', color: 'var(--text-main)' }}
+                />
+              </div>
+              <div>
+                <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 500 }}>Phone Number</label>
+                <input 
+                  type="tel" 
+                  value={editUserPhone} 
+                  onChange={e => setEditUserPhone(e.target.value)} 
+                  required 
+                  minLength={10}
+                  style={{ width: '100%', padding: '0.5rem', borderRadius: '4px', border: '1px solid var(--border-color)', backgroundColor: 'var(--bg-color)', color: 'var(--text-main)' }}
+                />
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                <input 
+                  type="checkbox" 
+                  checked={editUserIsActive}
+                  onChange={e => setEditUserIsActive(e.target.checked)}
+                  id="isActive"
+                />
+                <label htmlFor="isActive" style={{ fontWeight: 500 }}>Account Active</label>
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '1rem' }}>
+                <button 
+                  type="button" 
+                  className="danger outline"
+                  onClick={() => setConfirmDeleteOpen(true)}
+                  disabled={isSubmitting}
+                >
+                  Delete User
+                </button>
+                <div style={{ display: 'flex', gap: '1rem' }}>
+                  <button type="button" className="outline" onClick={() => setIsEditModalOpen(false)}>Cancel</button>
+                  <button type="submit" className="primary" disabled={isSubmitting}>
+                    {isSubmitting ? 'Saving...' : 'Save Changes'}
+                  </button>
+                </div>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Delete Confirmation Modal */}
+      {confirmDeleteOpen && (
+        <div style={{
+          position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+          backgroundColor: 'rgba(0,0,0,0.6)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1100
+        }}>
+          <div className="card" style={{ width: '100%', maxWidth: '380px', backgroundColor: 'var(--bg-surface)', textAlign: 'center', padding: '2rem' }}>
+            <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>⚠️</div>
+            <h3 style={{ margin: '0 0 0.5rem' }}>Delete {activeTab === 'students' ? 'Student' : 'Driver'}?</h3>
+            <p style={{ color: 'var(--text-muted)', marginBottom: '1.5rem', fontSize: '0.875rem' }}>
+              This will permanently delete <strong>{editUserName}</strong>. This action cannot be undone.
+            </p>
+            {submitError && (
+              <div style={{ backgroundColor: 'var(--color-danger)', color: 'white', padding: '0.75rem', borderRadius: '4px', marginBottom: '1rem', fontSize: '0.875rem' }}>
+                {submitError}
+              </div>
+            )}
+            <div style={{ display: 'flex', gap: '1rem', justifyContent: 'center' }}>
+              <button className="outline" onClick={() => setConfirmDeleteOpen(false)}>Cancel</button>
+              <button className="danger" onClick={handleDeleteUser} disabled={isDeletingUser}>
+                {isDeletingUser ? 'Deleting...' : 'Yes, Delete'}
+              </button>
+            </div>
           </div>
         </div>
       )}

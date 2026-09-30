@@ -8,8 +8,8 @@
 -->
 <network-security-config>
 
-    <!-- Block all cleartext traffic globally -->
-    <base-config cleartextTrafficPermitted="false">
+    <!-- Block all cleartext traffic globally, except for local development -->
+    <base-config cleartextTrafficPermitted="true">
         <trust-anchors>
             <certificates src="system" />
         </trust-anchors>

@@ -13,9 +13,10 @@ ChatMessage _$ChatMessageFromJson(Map<String, dynamic> json) => ChatMessage(
       senderName: json['sender_name'] as String,
       senderRole: json['sender_role'] as String,
       createdAt: json['created_at'] as String,
-      text: json['text'] as String?,
+      content: json['content'] as String?,
       attachmentUrl: json['attachment_url'] as String?,
       attachmentType: json['attachment_type'] as String?,
+      isDeleted: json['is_deleted'] as bool? ?? false,
     );
 
 Map<String, dynamic> _$ChatMessageToJson(ChatMessage instance) =>
@@ -25,8 +26,9 @@ Map<String, dynamic> _$ChatMessageToJson(ChatMessage instance) =>
       'sender_id': instance.senderId,
       'sender_name': instance.senderName,
       'sender_role': instance.senderRole,
-      'text': instance.text,
+      'content': instance.content,
       'attachment_url': instance.attachmentUrl,
       'attachment_type': instance.attachmentType,
       'created_at': instance.createdAt,
+      'is_deleted': instance.isDeleted,
     };

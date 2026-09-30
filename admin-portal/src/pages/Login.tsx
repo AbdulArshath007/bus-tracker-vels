@@ -15,7 +15,7 @@ export const Login: React.FC = () => {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const [pageLoading, setPageLoading] = useState(true);
-  
+
   const { setAuth } = useAuthStore();
   const { theme, toggleTheme } = useThemeStore();
   const navigate = useNavigate();
@@ -59,7 +59,7 @@ export const Login: React.FC = () => {
 
       const response = await api.post('/auth/login', { email, password });
       const { access_token, refresh_token, user } = response.data;
-      
+
       if (user.role !== 'admin') {
         setError('Only administrators can access this portal.');
         setLoading(false);
@@ -88,7 +88,7 @@ export const Login: React.FC = () => {
       // The backend expects role: 'admin' since this is the admin portal
       const response = await api.post('/auth/guest-login', { role: 'admin' });
       const { access_token, refresh_token, user } = response.data;
-      
+
       setAuth(access_token, refresh_token, user);
       navigate('/');
     } catch (err: any) {
@@ -101,16 +101,16 @@ export const Login: React.FC = () => {
 
   return (
     <div style={{
-      display: 'flex', 
+      display: 'flex',
       flexDirection: 'column',
       minHeight: '100vh',
       backgroundColor: 'var(--bg-color)',
       color: 'var(--text-main)'
     }}>
       <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', paddingTop: '4rem', position: 'relative' }}>
-        
+
         {/* Global Theme Toggle */}
-        <button 
+        <button
           onClick={toggleTheme}
           style={{ position: 'absolute', top: '1rem', right: '1rem', background: 'transparent', border: 'none', color: 'var(--text-main)', cursor: 'pointer', padding: '0.5rem' }}
           title="Toggle Theme"
@@ -119,10 +119,10 @@ export const Login: React.FC = () => {
         </button>
 
         {/* Login Box */}
-        <div style={{ 
-          width: '100%', 
-          maxWidth: '600px', 
-          backgroundColor: 'var(--bg-surface)', 
+        <div style={{
+          width: '100%',
+          maxWidth: '600px',
+          backgroundColor: 'var(--bg-surface)',
           borderRadius: '12px',
           overflow: 'hidden',
           boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)'
@@ -135,7 +135,7 @@ export const Login: React.FC = () => {
           <div style={{ backgroundColor: '#2170B5', color: 'white', padding: '1rem', textAlign: 'center', fontWeight: 600, letterSpacing: '1px' }}>
             VELS Admin Log In
           </div>
-          
+
           <div style={{ padding: '2rem' }}>
             {error && (
               <div style={{ backgroundColor: 'var(--color-danger)', color: 'white', padding: '0.75rem', borderRadius: '4px', marginBottom: '1rem', fontSize: '0.875rem' }}>
@@ -148,22 +148,22 @@ export const Login: React.FC = () => {
             <form onSubmit={handleLogin} style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
               <div style={{ display: 'grid', gridTemplateColumns: '160px 1fr', alignItems: 'center', gap: '1rem' }}>
                 <label style={{ fontSize: '0.875rem', fontWeight: 600, textAlign: 'right' }}>Your ID (Email):</label>
-                <input 
-                  type="email" 
-                  value={email} 
-                  onChange={(e) => setEmail(e.target.value)} 
-                  required 
+                <input
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  required
                   style={{ width: '100%' }}
                 />
               </div>
-              
+
               <div style={{ display: 'grid', gridTemplateColumns: '160px 1fr', alignItems: 'center', gap: '1rem' }}>
                 <label style={{ fontSize: '0.875rem', fontWeight: 600, textAlign: 'right' }}>Password:</label>
-                <input 
-                  type="password" 
-                  value={password} 
-                  onChange={(e) => setPassword(e.target.value)} 
-                  required 
+                <input
+                  type="password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  required
                   style={{ width: '100%' }}
                 />
               </div>
@@ -171,12 +171,12 @@ export const Login: React.FC = () => {
               <div style={{ display: 'grid', gridTemplateColumns: '160px 1fr', alignItems: 'center', gap: '1rem' }}>
                 <label style={{ fontSize: '0.875rem', fontWeight: 600, textAlign: 'right' }}>Captcha:</label>
                 <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
-                  <input 
-                    type="text" 
+                  <input
+                    type="text"
                     placeholder="Enter code"
-                    value={captcha} 
-                    onChange={(e) => setCaptcha(e.target.value)} 
-                    required 
+                    value={captcha}
+                    onChange={(e) => setCaptcha(e.target.value)}
+                    required
                     style={{ flex: 1, minWidth: '100px', backgroundColor: 'var(--bg-color)', textTransform: 'uppercase' }}
                   />
                   <div style={{ backgroundColor: '#f0f0f0', color: '#111', padding: '0.5rem', width: '120px', textAlign: 'center', fontSize: '1.5rem', fontWeight: 'bold', letterSpacing: '6px', border: '1px solid #ccc', borderRadius: '4px', fontStyle: 'italic', userSelect: 'none' }}>
@@ -188,20 +188,20 @@ export const Login: React.FC = () => {
               <button type="submit" style={{ backgroundColor: '#2170B5', color: 'white', border: 'none', padding: '0.75rem', borderRadius: '4px', fontWeight: 600, marginTop: '1rem', cursor: 'pointer' }} disabled={loading}>
                 {loading ? '...' : 'Log In'}
               </button>
-              
-              <button 
+
+              <button
                 type="button"
-                onClick={handleGuestLogin} 
-                style={{ 
-                  backgroundColor: 'transparent', 
-                  color: '#2170B5', 
-                  border: 'none', 
-                  padding: '0.5rem', 
-                  fontWeight: 600, 
-                  marginTop: '0.5rem', 
+                onClick={handleGuestLogin}
+                style={{
+                  backgroundColor: 'transparent',
+                  color: '#2170B5',
+                  border: 'none',
+                  padding: '0.5rem',
+                  fontWeight: 600,
+                  marginTop: '0.5rem',
                   cursor: 'pointer',
                   textDecoration: 'underline'
-                }} 
+                }}
                 disabled={loading}
               >
                 Continue as Guest

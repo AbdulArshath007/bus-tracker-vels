@@ -130,6 +130,8 @@ export class ChatService {
       content,
     });
     await this.msgRepo.save(msg);
+    
+    console.log(`[ChatService] Broadcasting message ${msg.id} to room ${roomId}. _gateway is:`, !!_gateway);
 
     // Broadcast
     _gateway?.emitToChat(roomId, 'chat.message', {
@@ -158,18 +160,28 @@ export class ChatService {
 
     const qb = this.msgRepo
       .createQueryBuilder('m')
-      .where('m.room_id = :roomId', { roomId })
+      .where('m.roomId = :roomId', { roomId })
       .leftJoinAndSelect('m.sender', 'sender')
       .leftJoinAndSelect('m.attachments', 'attachments')
-      .orderBy('m.created_at', 'DESC')
+      .orderBy('m.createdAt', 'DESC')
       .take(limit + 1);
 
     if (cursor) {
-      qb.andWhere('m.created_at < :cursor', { cursor });
+      qb.andWhere('m.createdAt < :cursor', { cursor });
     }
 
     const rows = await qb.getMany();
-    return { data: rows.slice(0, limit), hasMore: rows.length > limit };
+    const data = rows.slice(0, limit).map((msg) => ({
+      id: msg.id,
+      room_id: msg.roomId,
+      sender_id: msg.senderId,
+      sender_name: msg.sender?.fullName || msg.sender?.email || 'Unknown',
+      sender_role: msg.sender?.role || 'unknown',
+      content: msg.content,
+      attachments: msg.attachments || [],
+      created_at: msg.createdAt,
+    }));
+    return { data, hasMore: rows.length > limit };
   }
 
   // ── Upload attachment ─────────────────────────────────────────────────────

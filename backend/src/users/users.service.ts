@@ -16,6 +16,7 @@ import {
   IsOptional,
   IsString,
   MinLength,
+  IsBoolean,
 } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 
@@ -30,12 +31,13 @@ export class CreateUserDto {
 }
 
 export class UpdateUserDto {
-  @ApiProperty({ required: false }) @IsOptional() full_name?: string;
-  @ApiProperty({ required: false }) @IsOptional() phone?: string;
+  @ApiProperty({ required: false }) @IsOptional() @IsString() full_name?: string;
+  @ApiProperty({ required: false }) @IsOptional() @IsString() phone?: string;
   @ApiProperty({ required: false }) @IsOptional() @IsEmail() email?: string;
   @ApiProperty({ required: false }) @IsOptional() language_pref?: 'en' | 'ta';
   @ApiProperty({ required: false }) @IsOptional() theme_pref?: 'light' | 'dark';
   @ApiProperty({ required: false }) @IsOptional() fcm_token?: string;
+  @ApiProperty({ required: false }) @IsOptional() @IsBoolean() is_active?: boolean;
 }
 
 @Injectable()
@@ -135,6 +137,7 @@ export class UsersService {
     const user = await this.repo.findOneOrFail({ where: { id: targetId } });
     if (dto.full_name) user.fullName = dto.full_name;
     if (dto.phone) user.phone = dto.phone;
+    if (dto.is_active !== undefined) user.isActive = dto.is_active;
     await this.repo.save(user);
     await this.auditService.log({
       actorId,

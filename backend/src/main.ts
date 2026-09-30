@@ -66,7 +66,7 @@ async function bootstrap() {
   // ── Shutdown hooks ─────────────────────────────────────────────────────
   app.enableShutdownHooks();
 
-  await app.listen(port);
+  await app.listen(port, '0.0.0.0');
   console.log(`Backend running on port ${port} (${nodeEnv})`);
 }
 

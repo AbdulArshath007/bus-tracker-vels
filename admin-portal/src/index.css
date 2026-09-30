@@ -449,3 +449,7 @@ tr:hover td {
   animation: skeleton-shimmer 1.4s ease-in-out infinite;
 }
 
+
+/* Dropdown Menu CSS */
+.dropdown-menu.show { display: block !important; }
+.dropdown-menu button:hover { background-color: var(--color-primary-light); }

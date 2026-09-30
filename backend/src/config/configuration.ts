@@ -49,7 +49,7 @@ export const fcmConfig = registerAs('fcm', () => ({
 export const throttleConfig = registerAs('throttle', () => ({
   authLimit: parseInt(process.env.THROTTLE_AUTH_LIMIT || '10', 10),
   authTtlMs: parseInt(process.env.THROTTLE_AUTH_TTL_MS || '900000', 10),
-  globalLimit: parseInt(process.env.THROTTLE_GLOBAL_LIMIT || '200', 10),
+  globalLimit: parseInt(process.env.THROTTLE_GLOBAL_LIMIT || '5000', 10),
   globalTtlMs: parseInt(process.env.THROTTLE_GLOBAL_TTL_MS || '60000', 10),
   uploadLimit: parseInt(process.env.THROTTLE_UPLOAD_LIMIT || '20', 10),
   uploadTtlMs: parseInt(process.env.THROTTLE_UPLOAD_TTL_MS || '3600000', 10),

@@ -24,7 +24,10 @@ class ApiClient {
       baseUrl: AppConfig.baseUrl,
       connectTimeout: const Duration(seconds: 15),
       receiveTimeout: const Duration(seconds: 30),
-      headers: {'Accept': 'application/json'},
+      headers: {
+        'Accept': 'application/json',
+        'Accept-Encoding': 'identity', // Disable gzip to bypass Cloudflare truncation bug
+      },
     );
 
     final dio = Dio(options);
@@ -90,6 +93,9 @@ class ApiClient {
         BaseOptions(
           baseUrl: AppConfig.baseUrl,
           connectTimeout: const Duration(seconds: 10),
+          headers: {
+            'Accept-Encoding': 'identity',
+          },
         ),
       );
       final response = await refreshDio.post<Map<String, dynamic>>(

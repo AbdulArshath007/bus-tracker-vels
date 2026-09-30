@@ -11,9 +11,10 @@ class ChatMessage {
     required this.senderName,
     required this.senderRole,
     required this.createdAt,
-    this.text,
+    this.content,
     this.attachmentUrl,
     this.attachmentType,
+    this.isDeleted = false,
   });
 
   final String id;
@@ -30,7 +31,7 @@ class ChatMessage {
   @JsonKey(name: 'sender_role')
   final String senderRole;
 
-  final String? text;
+  final String? content;
 
   @JsonKey(name: 'attachment_url')
   final String? attachmentUrl;
@@ -40,8 +41,37 @@ class ChatMessage {
 
   @JsonKey(name: 'created_at')
   final String createdAt;
+  
+  @JsonKey(name: 'is_deleted', defaultValue: false)
+  final bool isDeleted;
 
   bool get isFromDriver => senderRole == 'driver';
+
+  ChatMessage copyWith({
+    String? id,
+    String? roomId,
+    String? senderId,
+    String? senderName,
+    String? senderRole,
+    String? createdAt,
+    String? content,
+    String? attachmentUrl,
+    String? attachmentType,
+    bool? isDeleted,
+  }) {
+    return ChatMessage(
+      id: id ?? this.id,
+      roomId: roomId ?? this.roomId,
+      senderId: senderId ?? this.senderId,
+      senderName: senderName ?? this.senderName,
+      senderRole: senderRole ?? this.senderRole,
+      createdAt: createdAt ?? this.createdAt,
+      content: content ?? this.content,
+      attachmentUrl: attachmentUrl ?? this.attachmentUrl,
+      attachmentType: attachmentType ?? this.attachmentType,
+      isDeleted: isDeleted ?? this.isDeleted,
+    );
+  }
 
   factory ChatMessage.fromJson(Map<String, dynamic> json) =>
       _$ChatMessageFromJson(json);

@@ -33,7 +33,7 @@ export class NotificationsService implements OnModuleInit {
   ) {}
 
   onModuleInit() {
-    const saPath = this.configService.get<string>('firebase.serviceAccountPath') || '';
+    const saPath = this.configService.get<string>('fcm.serviceAccountPath') || '';
     if (!existsSync(saPath)) {
       this.logger.warn(
         `Firebase service account not found at ${saPath}. Push notifications are disabled.`,

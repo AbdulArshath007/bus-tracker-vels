@@ -33,6 +33,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
   @override
   Widget build(BuildContext context) {
     final messages = ref.watch(chatProvider);
+    final hasRoom = ref.read(chatProvider.notifier).hasRoom;
     final roomName = ref.read(chatProvider.notifier).roomName ?? 'Route Chat';
 
     return Scaffold(
@@ -43,20 +44,35 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
       body: Column(
         children: [
           Expanded(
-            child: messages.isEmpty
-                ? _EmptyChat()
-                : ListView.builder(
-                    controller: _scrollCtrl,
-                    reverse: true,
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                    itemCount: messages.length,
-                    itemBuilder: (_, i) => _ChatBubble(message: messages[i]),
-                  ),
+            child: !hasRoom
+                ? Center(
+                    child: Padding(
+                      padding: const EdgeInsets.all(24.0),
+                      child: Text(
+                        'Contact the management to get added into the groupchat according to your bus route.',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          fontSize: 16,
+                          color: Theme.of(context).textTheme.bodyMedium?.color?.withValues(alpha: 0.6),
+                        ),
+                      ),
+                    ),
+                  )
+                : messages.isEmpty
+                    ? _EmptyChat()
+                    : ListView.builder(
+                        controller: _scrollCtrl,
+                        reverse: true,
+                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                        itemCount: messages.length,
+                        itemBuilder: (_, i) => _ChatBubble(message: messages[i]),
+                      ),
           ),
-          _InputBar(
-            controller: _textCtrl,
-            onSend: _send,
-          ),
+          if (hasRoom)
+            _InputBar(
+              controller: _textCtrl,
+              onSend: _send,
+            ),
         ],
       ),
     );
@@ -143,13 +159,24 @@ class _ChatBubble extends StatelessWidget {
                             width: 1,
                           ),
                   ),
-                  child: Text(
-                    message.text ?? '',
-                    style: TextStyle(
-                      color: isDriver ? Colors.white : theme.textTheme.bodyMedium?.color,
-                      fontSize: 14,
-                    ),
-                  ),
+                  child: message.isDeleted
+                      ? Text(
+                          'This message was deleted.',
+                          style: TextStyle(
+                            color: isDriver
+                                ? Colors.white.withValues(alpha: 0.8)
+                                : theme.textTheme.bodyMedium?.color?.withValues(alpha: 0.8),
+                            fontSize: 14,
+                            fontStyle: FontStyle.italic,
+                          ),
+                        )
+                      : Text(
+                          message.content ?? '',
+                          style: TextStyle(
+                            color: isDriver ? Colors.white : theme.textTheme.bodyMedium?.color,
+                            fontSize: 14,
+                          ),
+                        ),
                 ),
                 const SizedBox(height: 2),
                 Padding(
