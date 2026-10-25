@@ -9,8 +9,15 @@ import { ValidationPipe } from '@nestjs/common';
 
 // Config
 import {
-  appConfig, dbConfig, redisConfig, jwtConfig,
-  s3Config, fcmConfig, throttleConfig, geoConfig, seedConfig,
+  appConfig,
+  dbConfig,
+  redisConfig,
+  jwtConfig,
+  s3Config,
+  fcmConfig,
+  throttleConfig,
+  geoConfig,
+  seedConfig,
 } from './config/configuration';
 
 // Entities
@@ -50,8 +57,15 @@ import { HealthModule } from './health/health.module';
     ConfigModule.forRoot({
       isGlobal: true,
       load: [
-        appConfig, dbConfig, redisConfig, jwtConfig,
-        s3Config, fcmConfig, throttleConfig, geoConfig, seedConfig,
+        appConfig,
+        dbConfig,
+        redisConfig,
+        jwtConfig,
+        s3Config,
+        fcmConfig,
+        throttleConfig,
+        geoConfig,
+        seedConfig,
       ],
       envFilePath: '.env',
     }),
@@ -71,18 +85,32 @@ import { HealthModule } from './health/health.module';
               password: cs.get<string>('db.password'),
             }),
         entities: [
-          User, Bus, BusAssignment, Route, Stop,
-          ChatRoom, ChatRoomMember, Message, Attachment,
-          Ride, GpsPing, RefreshToken,
-          NotificationLog, AuditLog, ScheduledJobLog,
+          User,
+          Bus,
+          BusAssignment,
+          Route,
+          Stop,
+          ChatRoom,
+          ChatRoomMember,
+          Message,
+          Attachment,
+          Ride,
+          GpsPing,
+          RefreshToken,
+          NotificationLog,
+          AuditLog,
+          ScheduledJobLog,
         ],
         migrations: ['dist/database/migrations/*.js'],
         migrationsRun: cs.get<string>('app.nodeEnv') === 'development', // Auto-run migrations on startup (dev only)
-        synchronize: cs.get<string>('app.nodeEnv') === 'development' && process.env.TYPEORM_SYNC === 'true',
+        synchronize:
+          cs.get<string>('app.nodeEnv') === 'development' &&
+          process.env.TYPEORM_SYNC === 'true',
         logging: cs.get<string>('app.nodeEnv') === 'development',
-        ssl: cs.get<string>('app.nodeEnv') === 'production'
-          ? { rejectUnauthorized: false }
-          : false,
+        ssl:
+          cs.get<string>('app.nodeEnv') === 'production'
+            ? { rejectUnauthorized: false }
+            : false,
       }),
       inject: [ConfigService],
     }),
@@ -131,7 +159,7 @@ import { HealthModule } from './health/health.module';
     {
       provide: APP_PIPE,
       useValue: new ValidationPipe({
-        whitelist: true,       // strip unknown properties
+        whitelist: true, // strip unknown properties
         forbidNonWhitelisted: true,
         transform: true,
         transformOptions: { enableImplicitConversion: true },

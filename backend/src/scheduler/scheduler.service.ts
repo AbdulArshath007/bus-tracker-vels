@@ -1,5 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { Cron, CronExpression } from '@nestjs/schedule';
+import { Cron } from '@nestjs/schedule';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, LessThan } from 'typeorm';
 import { AuditLog } from '../audit/entities/audit-log.entity';
@@ -142,7 +142,9 @@ export class SchedulerService {
           body: `Your bus for route ${stop.route.routeName} is scheduled to depart in 10 minutes.`,
           bodyTa: `உங்கள் வழித்தடமான ${stop.route.routeName} பேருந்து 10 நிமிடங்களில் புறப்படும்.`,
         });
-        this.logger.log(`Sent pre-ride notifications for route ${stop.route.routeName}`);
+        this.logger.log(
+          `Sent pre-ride notifications for route ${stop.route.routeName}`,
+        );
       }
     } catch (err) {
       this.logger.error(`Pre-ride notification job FAILED: ${err.message}`);

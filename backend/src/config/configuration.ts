@@ -67,8 +67,7 @@ export const geoConfig = registerAs('geo', () => ({
 }));
 
 export const seedConfig = registerAs('seed', () => ({
-  adminEmail:
-    process.env.ADMIN_EMAIL || 'admin@bustrack.vels.edu.in',
+  adminEmail: process.env.ADMIN_EMAIL || 'admin@bustrack.vels.edu.in',
   adminPassword: process.env.ADMIN_PASSWORD || 'changeme',
   adminFullName: process.env.ADMIN_FULL_NAME || 'System Administrator',
 }));

@@ -30,7 +30,8 @@ export class UsersController {
   @ApiOperation({ summary: 'Get own profile' })
   getMe(@Req() req: any) {
     // Return user without passwordHash (already excluded by JwtStrategy)
-    const { passwordHash, ...safe } = req.user;
+    const safe = { ...req.user };
+    delete safe.passwordHash;
     return safe;
   }
 
@@ -74,7 +75,8 @@ export class UsersController {
     // IDOR: return same generic error whether user exists or not
     return this.usersService.findById(id).then((u) => {
       if (!u) throw new ForbiddenException('Not authorized.');
-      const { passwordHash, ...safe } = u as any;
+      const safe = { ...(u as any) };
+      delete safe.passwordHash;
       return safe;
     });
   }

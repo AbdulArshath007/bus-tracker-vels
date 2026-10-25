@@ -23,12 +23,15 @@ export class S3Service {
       region: this.configService.get<string>('s3.region') || 'us-east-1',
       credentials: {
         accessKeyId: this.configService.get<string>('s3.accessKeyId') || '',
-        secretAccessKey: this.configService.get<string>('s3.secretAccessKey') || '',
+        secretAccessKey:
+          this.configService.get<string>('s3.secretAccessKey') || '',
       },
       ...(endpoint ? { endpoint, forcePathStyle: true } : {}),
     });
-    this.bucket = this.configService.get<string>('s3.bucketName') || 'bus-tracker-bucket';
-    this.presignedTtl = this.configService.get<number>('s3.presignedUrlTtlSeconds') || 300;
+    this.bucket =
+      this.configService.get<string>('s3.bucketName') || 'bus-tracker-bucket';
+    this.presignedTtl =
+      this.configService.get<number>('s3.presignedUrlTtlSeconds') || 300;
   }
 
   // Upload file bytes and return the S3 object key

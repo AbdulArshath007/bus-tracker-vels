@@ -5,3 +5,13 @@ firebase-service-account.json
 *.log
 coverage/
 .DS_Store
+
+# Local debug & maintenance scripts
+add-velan-room.js
+check_admin.js
+check_membership.js
+create-velan.js
+create-velan.ts
+fix_all.js
+fix_db.js
+remove-velan.js

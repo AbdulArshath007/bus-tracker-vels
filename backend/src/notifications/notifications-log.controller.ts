@@ -32,8 +32,10 @@ export class NotificationsLogController {
     const lim = Math.min(parseInt(limit ?? '50', 10), 100);
     const qb = this.repo.createQueryBuilder('n');
 
-    if (recipientId) qb.andWhere('n.recipient_id = :recipientId', { recipientId });
-    if (triggerEvent) qb.andWhere('n.trigger_event = :triggerEvent', { triggerEvent });
+    if (recipientId)
+      qb.andWhere('n.recipient_id = :recipientId', { recipientId });
+    if (triggerEvent)
+      qb.andWhere('n.trigger_event = :triggerEvent', { triggerEvent });
     if (from) qb.andWhere('n.sent_at >= :from', { from: new Date(from) });
     if (to) qb.andWhere('n.sent_at <= :to', { to: new Date(to) });
     if (cursor) qb.andWhere('n.sent_at < :cursor', { cursor });

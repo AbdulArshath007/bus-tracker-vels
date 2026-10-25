@@ -1,12 +1,11 @@
 // ─── main.ts ─────────────────────────────────────────────────────────────────
-import { NestFactory, Reflector } from '@nestjs/core';
+import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { ConfigService } from '@nestjs/config';
 import * as helmet from 'helmet';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { WinstonModule } from 'nest-winston';
 import * as winston from 'winston';
-import { RolesGuard } from './auth/guards/roles.guard';
 
 async function bootstrap() {
   const logger = WinstonModule.createLogger({
@@ -54,7 +53,9 @@ async function bootstrap() {
   if (nodeEnv !== 'production') {
     const config = new DocumentBuilder()
       .setTitle('Vels Bus Tracker API')
-      .setDescription('Shared backend API for Student App, Driver App, and Admin Portal')
+      .setDescription(
+        'Shared backend API for Student App, Driver App, and Admin Portal',
+      )
       .setVersion('1.0')
       .addBearerAuth()
       .build();

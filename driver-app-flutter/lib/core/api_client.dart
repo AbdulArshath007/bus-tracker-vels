@@ -22,8 +22,8 @@ class ApiClient {
   Dio _buildDio() {
     final options = BaseOptions(
       baseUrl: AppConfig.baseUrl,
-      connectTimeout: const Duration(seconds: 60),
-      receiveTimeout: const Duration(seconds: 60),
+      connectTimeout: const Duration(seconds: 120),
+      receiveTimeout: const Duration(seconds: 120),
       headers: {
         'Accept': 'application/json',
         'Accept-Encoding': 'identity', // Disable gzip to bypass Cloudflare truncation bug

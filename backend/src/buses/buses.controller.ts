@@ -1,6 +1,14 @@
 import {
-  Controller, Get, Post, Patch, Param, Body, UseGuards, Req,
-  HttpCode, HttpStatus,
+  Controller,
+  Get,
+  Post,
+  Patch,
+  Param,
+  Body,
+  UseGuards,
+  Req,
+  HttpCode,
+  HttpStatus,
 } from '@nestjs/common';
 import { ApiTags, ApiBearerAuth, ApiOperation } from '@nestjs/swagger';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
@@ -23,7 +31,9 @@ export class BusesController {
   @Get()
   @Roles('admin')
   @ApiOperation({ summary: 'List all buses with current assignment (admin)' })
-  findAll() { return this.busesService.findAll(); }
+  findAll() {
+    return this.busesService.findAll();
+  }
 
   @Post()
   @Roles('admin')

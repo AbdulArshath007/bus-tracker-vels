@@ -2,7 +2,6 @@
 import {
   Injectable,
   BadRequestException,
-  ForbiddenException,
   NotFoundException,
   Logger,
 } from '@nestjs/common';
@@ -24,9 +23,11 @@ export function setGpsGateway(g: any) {
   _gateway = g;
 }
 
-function haversineMetres(
-  lat1: number, lng1: number,
-  lat2: number, lng2: number,
+function _haversineMetres(
+  lat1: number,
+  lng1: number,
+  lat2: number,
+  lng2: number,
 ): number {
   const R = 6371000;
   const dLat = ((lat2 - lat1) * Math.PI) / 180;
@@ -127,7 +128,7 @@ export class RidesService {
     if (!ride) throw new NotFoundException('Active ride not found.');
 
     // Validate geofence if last GPS ping is available
-    const geofenceRadius = this.configService.get<number>(
+    const _geofenceRadius = this.configService.get<number>(
       'geo.destinationGeofenceRadiusMetres',
     );
     const loc = await this.redisService.getLocation(ride.busId);
@@ -267,12 +268,17 @@ export class RidesService {
       .leftJoinAndSelect('r.bus', 'bus')
       .leftJoinAndSelect('r.driver', 'driver');
 
-    if (filters.busId) qb.andWhere('r.bus_id = :busId', { busId: filters.busId });
-    if (filters.driverId) qb.andWhere('r.driver_id = :driverId', { driverId: filters.driverId });
-    if (filters.status) qb.andWhere('r.status = :status', { status: filters.status });
-    if (filters.from) qb.andWhere('r.created_at >= :from', { from: filters.from });
+    if (filters.busId)
+      qb.andWhere('r.bus_id = :busId', { busId: filters.busId });
+    if (filters.driverId)
+      qb.andWhere('r.driver_id = :driverId', { driverId: filters.driverId });
+    if (filters.status)
+      qb.andWhere('r.status = :status', { status: filters.status });
+    if (filters.from)
+      qb.andWhere('r.created_at >= :from', { from: filters.from });
     if (filters.to) qb.andWhere('r.created_at <= :to', { to: filters.to });
-    if (filters.cursor) qb.andWhere('r.created_at < :cursor', { cursor: filters.cursor });
+    if (filters.cursor)
+      qb.andWhere('r.created_at < :cursor', { cursor: filters.cursor });
 
     qb.orderBy('r.created_at', 'DESC').take(limit + 1);
     const rows = await qb.getMany();

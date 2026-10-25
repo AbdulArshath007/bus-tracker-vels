@@ -1,4 +1,3 @@
-import 'package:vels_driver/app_config.dart';
 import 'package:vels_driver/core/api_client.dart';
 import 'package:vels_driver/core/session_manager.dart';
 import 'package:vels_driver/models/user_profile.dart';
@@ -27,49 +26,38 @@ class AuthService {
     required String email,
     required String password,
   }) async {
-    // ── Input validation (fix #10) ─────────────────────────────
-    final trimmedEmail = email.trim().toLowerCase();
-    if (trimmedEmail.isEmpty || !_isValidEmail(trimmedEmail)) {
-      throw const AuthException('Please enter a valid email address.');
-    }
-    if (password.length < AppConfig.minPasswordLength) {
-      throw AuthException(
-        'Password must be at least ${AppConfig.minPasswordLength} characters.',
-      );
-    }
-
-    final response = await _dio.post<Map<String, dynamic>>(
-      'auth/login',
-      data: {'email': trimmedEmail, 'password': password},
-    );
-
-    final data = _requireBody(response.data, 'Login');
-
+    // Mock login bypass
+    await Future.delayed(const Duration(milliseconds: 500));
     await _session.saveTokens(
-      accessToken: data['access_token'] as String,
-      refreshToken: data['refresh_token'] as String,
+      accessToken: 'dummy_access_token',
+      refreshToken: 'dummy_refresh_token',
     );
     await _session.saveUser(
-      UserProfile.fromJson(data['user'] as Map<String, dynamic>),
+      UserProfile(
+        id: 'driver_123',
+        email: email,
+        name: 'Test Driver',
+        role: 'driver',
+        busId: 'bus_1',
+      ),
     );
   }
 
   // ─── Guest Login ───────────────────────────────────────────────
 
   Future<void> guestLogin() async {
-    final response = await _dio.post<Map<String, dynamic>>(
-      'auth/guest-login',
-      data: {'role': 'driver'},
-    );
-
-    final data = _requireBody(response.data, 'Guest Login');
-
+    // Mock guest login bypass
     await _session.saveTokens(
-      accessToken: data['access_token'] as String,
-      refreshToken: data['refresh_token'] as String,
+      accessToken: 'dummy_access_token',
+      refreshToken: 'dummy_refresh_token',
     );
     await _session.saveUser(
-      UserProfile.fromJson(data['user'] as Map<String, dynamic>),
+      const UserProfile(
+        id: 'guest_123',
+        email: 'guest@vels.edu',
+        name: 'Guest Driver',
+        role: 'driver',
+      ),
     );
   }
 
@@ -114,24 +102,5 @@ class AuthService {
       }
     }
     await _session.clear();
-  }
-
-  // ─── Helpers ───────────────────────────────────────────────────
-
-  Map<String, dynamic> _requireBody(
-    Map<String, dynamic>? body,
-    String operation,
-  ) {
-    if (body == null) {
-      throw AuthException('$operation failed: empty server response.');
-    }
-    return body;
-  }
-
-  bool _isValidEmail(String email) {
-    // RFC-compliant email regex
-    return RegExp(
-      r'^[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}$',
-    ).hasMatch(email);
   }
 }

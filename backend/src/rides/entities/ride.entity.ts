@@ -15,10 +15,7 @@ import { Route } from '../../routes/entities/route.entity';
 import { GpsPing } from './gps-ping.entity';
 
 export type RideStatus =
-  | 'not_started'
-  | 'active'
-  | 'destination_reached'
-  | 'ended';
+  'not_started' | 'active' | 'destination_reached' | 'ended';
 
 @Entity('rides')
 export class Ride {

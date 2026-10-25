@@ -11,18 +11,78 @@ import { join } from 'path';
 dotenv.config();
 
 const ROUTES = [
-  { name: 'Route 1 - Porur',        nameTa: 'வழி 1 - போரூர்',        lat: 13.0389, lng: 80.1583 },
-  { name: 'Route 2 - Tambaram',     nameTa: 'வழி 2 - தாம்பரம்',     lat: 12.9249, lng: 80.1000 },
-  { name: 'Route 3 - Vadapalani',   nameTa: 'வழி 3 - வடபழனி',   lat: 13.0521, lng: 80.2121 },
-  { name: 'Route 4 - Chromepet',    nameTa: 'வழி 4 - குரோம்பேட்',    lat: 12.9516, lng: 80.1462 },
-  { name: 'Route 5 - Anna Nagar',   nameTa: 'வழி 5 - அண்ணா நகர்',   lat: 13.0850, lng: 80.2101 },
-  { name: 'Route 6 - Velachery',    nameTa: 'வழி 6 - வேளச்சேரி',    lat: 12.9815, lng: 80.2209 },
-  { name: 'Route 7 - Guindy',       nameTa: 'வழி 7 - கிண்டி',       lat: 13.0067, lng: 80.2206 },
-  { name: 'Route 8 - Pallavaram',   nameTa: 'வழி 8 - பல்லாவரம்',   lat: 12.9675, lng: 80.1491 },
-  { name: 'Route 9 - Perambur',     nameTa: 'வழி 9 - பெரம்பூர்',     lat: 13.1152, lng: 80.2436 },
-  { name: 'Route 10 - Adyar',       nameTa: 'வழி 10 - அடையாறு',       lat: 13.0012, lng: 80.2565 },
-  { name: 'Route 11 - Sholinganallur', nameTa: 'வழி 11 - சோழிங்கநல்லூர்', lat: 12.9010, lng: 80.2279 },
-  { name: 'Route 12 - Avadi',       nameTa: 'வழி 12 - ஆவடி',       lat: 13.1128, lng: 80.0966 },
+  {
+    name: 'Route 1 - Porur',
+    nameTa: 'வழி 1 - போரூர்',
+    lat: 13.0389,
+    lng: 80.1583,
+  },
+  {
+    name: 'Route 2 - Tambaram',
+    nameTa: 'வழி 2 - தாம்பரம்',
+    lat: 12.9249,
+    lng: 80.1,
+  },
+  {
+    name: 'Route 3 - Vadapalani',
+    nameTa: 'வழி 3 - வடபழனி',
+    lat: 13.0521,
+    lng: 80.2121,
+  },
+  {
+    name: 'Route 4 - Chromepet',
+    nameTa: 'வழி 4 - குரோம்பேட்',
+    lat: 12.9516,
+    lng: 80.1462,
+  },
+  {
+    name: 'Route 5 - Anna Nagar',
+    nameTa: 'வழி 5 - அண்ணா நகர்',
+    lat: 13.085,
+    lng: 80.2101,
+  },
+  {
+    name: 'Route 6 - Velachery',
+    nameTa: 'வழி 6 - வேளச்சேரி',
+    lat: 12.9815,
+    lng: 80.2209,
+  },
+  {
+    name: 'Route 7 - Guindy',
+    nameTa: 'வழி 7 - கிண்டி',
+    lat: 13.0067,
+    lng: 80.2206,
+  },
+  {
+    name: 'Route 8 - Pallavaram',
+    nameTa: 'வழி 8 - பல்லாவரம்',
+    lat: 12.9675,
+    lng: 80.1491,
+  },
+  {
+    name: 'Route 9 - Perambur',
+    nameTa: 'வழி 9 - பெரம்பூர்',
+    lat: 13.1152,
+    lng: 80.2436,
+  },
+  {
+    name: 'Route 10 - Adyar',
+    nameTa: 'வழி 10 - அடையாறு',
+    lat: 13.0012,
+    lng: 80.2565,
+  },
+  {
+    name: 'Route 11 - Sholinganallur',
+    nameTa: 'வழி 11 - சோழிங்கநல்லூர்',
+    lat: 12.901,
+    lng: 80.2279,
+  },
+  {
+    name: 'Route 12 - Avadi',
+    nameTa: 'வழி 12 - ஆவடி',
+    lat: 13.1128,
+    lng: 80.0966,
+  },
 ];
 
 async function seed() {
@@ -46,8 +106,7 @@ async function seed() {
 
   try {
     // 1. Admin user
-    const adminEmail =
-      process.env.ADMIN_EMAIL || 'admin@bustrack.vels.edu.in';
+    const adminEmail = process.env.ADMIN_EMAIL || 'admin@bustrack.vels.edu.in';
     const existing = await queryRunner.query(
       `SELECT id FROM users WHERE email = $1`,
       [adminEmail],
@@ -63,7 +122,11 @@ async function seed() {
         `INSERT INTO users (email, password_hash, role, full_name)
          VALUES ($1, $2, 'admin', $3)
          RETURNING id`,
-        [adminEmail, hash, process.env.ADMIN_FULL_NAME || 'System Administrator'],
+        [
+          adminEmail,
+          hash,
+          process.env.ADMIN_FULL_NAME || 'System Administrator',
+        ],
       );
       adminId = admin.id;
       console.log(`Admin created: ${adminEmail}`);

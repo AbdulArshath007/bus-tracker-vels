@@ -7,7 +7,7 @@ import { ConfigService } from '@nestjs/config';
 import { User } from '../users/entities/user.entity';
 import { NotificationLog } from './entities/notification-log.entity';
 import { ChatRoomMember } from '../chat/entities/chat-room-member.entity';
-import { existsSync } from 'fs';
+import { existsSync, readFileSync } from 'fs';
 
 export interface NotifPayload {
   trigger: string;
@@ -33,7 +33,8 @@ export class NotificationsService implements OnModuleInit {
   ) {}
 
   onModuleInit() {
-    const saPath = this.configService.get<string>('fcm.serviceAccountPath') || '';
+    const saPath =
+      this.configService.get<string>('fcm.serviceAccountPath') || '';
     if (!existsSync(saPath)) {
       this.logger.warn(
         `Firebase service account not found at ${saPath}. Push notifications are disabled.`,
@@ -42,8 +43,9 @@ export class NotificationsService implements OnModuleInit {
     }
 
     if (!admin.apps.length) {
-      // eslint-disable-next-line @typescript-eslint/no-var-requires
-      const serviceAccount = require(saPath);
+      const serviceAccount = JSON.parse(
+        readFileSync(saPath, 'utf8'),
+      ) as admin.ServiceAccount;
       this.firebaseApp = admin.initializeApp({
         credential: admin.credential.cert(serviceAccount),
       });
@@ -54,15 +56,14 @@ export class NotificationsService implements OnModuleInit {
   }
 
   // ── Send to one user ───────────────────────────────────────────────────────
-  async sendToUser(
-    user: User,
-    payload: NotifPayload,
-  ): Promise<void> {
+  async sendToUser(user: User, payload: NotifPayload): Promise<void> {
     if (!user.fcmToken || !this.firebaseApp) return;
 
     const lang = user.languagePref;
-    const title = lang === 'ta' && payload.titleTa ? payload.titleTa : payload.title;
-    const body = lang === 'ta' && payload.bodyTa ? payload.bodyTa : payload.body;
+    const title =
+      lang === 'ta' && payload.titleTa ? payload.titleTa : payload.title;
+    const body =
+      lang === 'ta' && payload.bodyTa ? payload.bodyTa : payload.body;
 
     try {
       const msgId = await this.firebaseApp.messaging().send({

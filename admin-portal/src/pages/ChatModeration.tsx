@@ -261,38 +261,32 @@ export const ChatModeration: React.FC = () => {
                       ) : (
                         <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
                           <p style={{ margin: 0, fontSize: '0.9rem', wordBreak: 'break-word' }}>{msg.content}</p>
-                          {isAdmin && (
-                            <div className="dropdown" style={{ position: 'relative' }}>
-                              <button 
-                                className="icon-btn" 
-                                style={{ background: 'transparent', border: 'none', color: isAdmin ? 'rgba(255,255,255,0.7)' : 'var(--text-muted)', cursor: 'pointer', padding: '0 0.2rem' }}
-                                onClick={(e) => {
-                                  e.currentTarget.nextElementSibling?.classList.toggle('show');
-                                }}
-                              >
-                                ⋮
-                              </button>
-                              <div className="dropdown-menu" style={{ 
-                                position: 'absolute', right: 0, top: '100%', 
-                                backgroundColor: 'var(--bg-surface)', 
-                                boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
-                                borderRadius: '8px',
-                                overflow: 'hidden',
-                                zIndex: 10,
-                                display: 'none',
-                                minWidth: '100px'
-                              }}>
-                                <button style={{ width: '100%', padding: '0.5rem 1rem', border: 'none', background: 'transparent', textAlign: 'left', cursor: 'pointer', color: 'var(--text-main)' }} onClick={(e) => {
-                                  alert('Edit message functionality requires backend update.');
-                                  e.currentTarget.parentElement?.classList.remove('show');
-                                }}>Edit</button>
-                                <button style={{ width: '100%', padding: '0.5rem 1rem', border: 'none', background: 'transparent', textAlign: 'left', cursor: 'pointer', color: 'var(--color-danger)' }} onClick={(e) => {
-                                  deleteMessage(msg.id);
-                                  e.currentTarget.parentElement?.classList.remove('show');
-                                }}>Delete</button>
-                              </div>
+                          <div className="dropdown" style={{ position: 'relative' }}>
+                            <button 
+                              className="icon-btn" 
+                              style={{ background: 'transparent', border: 'none', color: isAdmin ? 'rgba(255,255,255,0.7)' : 'var(--text-muted)', cursor: 'pointer', padding: '0 0.2rem' }}
+                              onClick={(e) => {
+                                e.currentTarget.nextElementSibling?.classList.toggle('show');
+                              }}
+                            >
+                              ⋮
+                            </button>
+                            <div className="dropdown-menu" style={{ 
+                              position: 'absolute', right: 0, top: '100%', 
+                              backgroundColor: 'var(--bg-surface)', 
+                              boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+                              borderRadius: '8px',
+                              overflow: 'hidden',
+                              zIndex: 10,
+                              display: 'none',
+                              minWidth: '100px'
+                            }}>
+                              <button style={{ width: '100%', padding: '0.5rem 1rem', border: 'none', background: 'transparent', textAlign: 'left', cursor: 'pointer', color: 'var(--color-danger)' }} onClick={(e) => {
+                                deleteMessage(msg.id);
+                                e.currentTarget.parentElement?.classList.remove('show');
+                              }}>Delete</button>
                             </div>
-                          )}
+                          </div>
                         </div>
                       )}
                     </div>
@@ -374,7 +368,8 @@ export const ChatModeration: React.FC = () => {
                         try {
                           await api.delete(`/chat-rooms/${selectedRoom}/members/${m.userId}`);
                           setRoomMembers(prev => prev.filter(member => member.id !== m.id));
-                        } catch (e) {
+                        } catch (err) {
+                          console.error('Failed to remove member:', err);
                           alert('Failed to remove member');
                         }
                       }}>Remove</button>

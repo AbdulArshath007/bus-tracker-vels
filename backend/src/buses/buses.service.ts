@@ -3,7 +3,6 @@ import {
   Injectable,
   NotFoundException,
   BadRequestException,
-  ConflictException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
@@ -13,13 +12,24 @@ import { Route } from '../routes/entities/route.entity';
 import { User } from '../users/entities/user.entity';
 import { AuditService } from '../audit/audit.service';
 import { RedisService } from '../common/redis/redis.service';
-import { IsNotEmpty, IsOptional, IsString, IsInt, Min, IsUUID } from 'class-validator';
+import {
+  IsNotEmpty,
+  IsOptional,
+  IsString,
+  IsInt,
+  Min,
+  IsUUID,
+} from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 
 export class CreateBusDto {
   @ApiProperty() @IsNotEmpty() @IsString() bus_number: string;
   @ApiProperty() @IsNotEmpty() @IsString() plate_number: string;
-  @ApiProperty({ required: false }) @IsOptional() @IsInt() @Min(1) capacity?: number;
+  @ApiProperty({ required: false })
+  @IsOptional()
+  @IsInt()
+  @Min(1)
+  capacity?: number;
 }
 
 export class AssignBusDto {
@@ -29,7 +39,9 @@ export class AssignBusDto {
 
 // GpsGateway injected lazily
 let _gateway: any;
-export function setBusGateway(g: any) { _gateway = g; }
+export function setBusGateway(g: any) {
+  _gateway = g;
+}
 
 @Injectable()
 export class BusesService {
@@ -91,8 +103,11 @@ export class BusesService {
     if (dto.capacity) bus.capacity = dto.capacity;
     await this.busRepo.save(bus);
     await this.auditService.log({
-      actorId, actorRole: 'admin', action: 'bus.update',
-      targetType: 'bus', targetId: busId,
+      actorId,
+      actorRole: 'admin',
+      action: 'bus.update',
+      targetType: 'bus',
+      targetId: busId,
     });
     return bus;
   }
@@ -102,7 +117,8 @@ export class BusesService {
     const driver = await this.userRepo.findOne({
       where: { id: dto.driver_id, role: 'driver', isActive: true },
     });
-    if (!driver) throw new BadRequestException('Driver not found or not active.');
+    if (!driver)
+      throw new BadRequestException('Driver not found or not active.');
 
     const route = await this.routeRepo.findOne({ where: { id: dto.route_id } });
     if (!route) throw new BadRequestException('Route not found.');
@@ -122,8 +138,11 @@ export class BusesService {
     await this.assignmentRepo.save(assignment);
 
     await this.auditService.log({
-      actorId, actorRole: 'admin', action: 'bus.assign',
-      targetType: 'bus', targetId: busId,
+      actorId,
+      actorRole: 'admin',
+      action: 'bus.assign',
+      targetType: 'bus',
+      targetId: busId,
       metadata: { driverId: dto.driver_id, routeId: dto.route_id },
     });
     return assignment;
@@ -147,20 +166,34 @@ export class BusesService {
     });
 
     await this.auditService.log({
-      actorId, actorRole: 'admin', action: 'bus.reroute',
-      targetType: 'bus', targetId: busId,
+      actorId,
+      actorRole: 'admin',
+      action: 'bus.reroute',
+      targetType: 'bus',
+      targetId: busId,
       metadata: { oldRouteId, newRouteId },
     });
     return assignment;
   }
 
-  async getLocation(busId: string, requesterId: string, requesterRole: string) {
+  async getLocation(
+    busId: string,
+    _requesterId: string,
+    _requesterRole: string,
+  ) {
     // Students: must be assigned to this bus's route
     // Handled in controller via guard; here we just return
     const loc = await this.redisService.getLocation(busId);
     return {
       bus_id: busId,
-      ...(loc ?? { latitude: null, longitude: null, speed_kmh: null, heading: null, timestamp: null, is_live: false }),
+      ...(loc ?? {
+        latitude: null,
+        longitude: null,
+        speed_kmh: null,
+        heading: null,
+        timestamp: null,
+        is_live: false,
+      }),
     };
   }
 }

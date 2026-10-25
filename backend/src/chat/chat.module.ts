@@ -12,7 +12,13 @@ import { S3Module } from '../common/s3/s3.module';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([ChatRoom, ChatRoomMember, Message, Attachment, ScheduledJobLog]),
+    TypeOrmModule.forFeature([
+      ChatRoom,
+      ChatRoomMember,
+      Message,
+      Attachment,
+      ScheduledJobLog,
+    ]),
     AuditModule,
     S3Module,
   ],

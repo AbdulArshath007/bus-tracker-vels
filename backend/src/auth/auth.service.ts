@@ -1,9 +1,5 @@
 // ─── Auth Service ─────────────────────────────────────────────────────────────
-import {
-  Injectable,
-  UnauthorizedException,
-  Logger,
-} from '@nestjs/common';
+import { Injectable, UnauthorizedException, Logger } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -179,8 +175,10 @@ export class AuthService {
 
   // ── Private helpers ────────────────────────────────────────────────────────
   private async issueTokens(user: User) {
-    const accessTtl = this.configService.get<number>('jwt.accessTtlSeconds') || 900;
-    const refreshTtlDays = this.configService.get<number>('jwt.refreshExpiresInDays') || 7;
+    const accessTtl =
+      this.configService.get<number>('jwt.accessTtlSeconds') || 900;
+    const refreshTtlDays =
+      this.configService.get<number>('jwt.refreshExpiresInDays') || 7;
 
     const payload = { sub: user.id, role: user.role, email: user.email };
     const access_token = this.jwtService.sign(payload, {

@@ -8,7 +8,10 @@ import { RoutesController } from './routes.controller';
 import { AuditModule } from '../audit/audit.module';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Route, Stop, ChatRoomMember]), AuditModule],
+  imports: [
+    TypeOrmModule.forFeature([Route, Stop, ChatRoomMember]),
+    AuditModule,
+  ],
   providers: [RoutesService],
   controllers: [RoutesController],
   exports: [RoutesService],

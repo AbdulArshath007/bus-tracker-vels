@@ -137,7 +137,9 @@ export class InitialSchema1000000000000 implements MigrationInterface {
         WHERE status IN ('active', 'destination_reached')
     `);
 
-    await queryRunner.query(`CREATE INDEX "rides_status_idx" ON rides (status)`);
+    await queryRunner.query(
+      `CREATE INDEX "rides_status_idx" ON rides (status)`,
+    );
 
     // ── gps_pings ──────────────────────────────────────────────────────────
     await queryRunner.query(`

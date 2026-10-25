@@ -5,8 +5,6 @@ import { AppModule } from '../src/app.module';
 
 describe('Auth & RBAC (e2e)', () => {
   let app: INestApplication;
-  let adminToken: string;
-  let studentToken: string;
 
   beforeAll(async () => {
     const moduleFixture: TestingModule = await Test.createTestingModule({
@@ -23,11 +21,9 @@ describe('Auth & RBAC (e2e)', () => {
   });
 
   it('should prevent email enumeration on failed login', async () => {
-    const start = Date.now();
     const res1 = await request(app.getHttpServer())
       .post('/auth/login')
       .send({ email: 'nonexistent@vels.edu.in', password: 'wrongpassword' });
-    const duration1 = Date.now() - start;
 
     expect(res1.status).toBe(401);
     expect(res1.body.message).toBe('Invalid credentials.');
@@ -36,9 +32,7 @@ describe('Auth & RBAC (e2e)', () => {
   });
 
   it('should return 401 when no token is provided', () => {
-    return request(app.getHttpServer())
-      .get('/users/me')
-      .expect(401);
+    return request(app.getHttpServer()).get('/users/me').expect(401);
   });
 
   // Tests would normally seed an admin/student and test RBAC here:

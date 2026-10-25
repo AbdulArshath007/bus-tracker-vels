@@ -1,5 +1,15 @@
 import {
-  Controller, Get, Post, Patch, Delete, Param, Body, Query, UseGuards, Req, HttpCode, HttpStatus,
+  Controller,
+  Get,
+  Post,
+  Patch,
+  Delete,
+  Param,
+  Body,
+  UseGuards,
+  Req,
+  HttpCode,
+  HttpStatus,
 } from '@nestjs/common';
 import { ApiTags, ApiBearerAuth, ApiOperation } from '@nestjs/swagger';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
@@ -31,7 +41,11 @@ export class RoutesController {
   @Patch(':id')
   @Roles('admin')
   @ApiOperation({ summary: 'Update route (admin)' })
-  update(@Param('id') id: string, @Body() dto: CreateRouteDto, @Req() req: any) {
+  update(
+    @Param('id') id: string,
+    @Body() dto: CreateRouteDto,
+    @Req() req: any,
+  ) {
     return this.routesService.update(id, dto, req.user.id);
   }
 
@@ -46,7 +60,11 @@ export class RoutesController {
   @Patch(':id/stops/:stopId')
   @Roles('admin')
   @ApiOperation({ summary: 'Update a stop (admin)' })
-  updateStop(@Param('stopId') stopId: string, @Body() dto: any, @Req() req: any) {
+  updateStop(
+    @Param('stopId') stopId: string,
+    @Body() dto: any,
+    @Req() req: any,
+  ) {
     return this.routesService.updateStop(stopId, dto, req.user.id);
   }
 

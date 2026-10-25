@@ -9,9 +9,21 @@ library app_config;
 class AppConfig {
   AppConfig._();
 
-  // Using Cloudflare tunnel for remote access over the internet
-  static const String baseUrl = 'https://vels-backend-3k26.onrender.com/v1';
-  static const String socketUrl = 'https://vels-backend-3k26.onrender.com';
+  /// Base URL for REST API calls.
+  /// Override at build time:
+  ///   `flutter build apk --dart-define=BASE_URL=https://your-api.com/v1/`
+  static const String baseUrl = String.fromEnvironment(
+    'BASE_URL',
+    defaultValue: 'http://10.0.2.2:3000/v1/',
+  );
+
+  /// Socket.IO server URL.
+  /// Override at build time:
+  ///   `flutter build apk --dart-define=SOCKET_URL=https://your-api.com`
+  static const String socketUrl = String.fromEnvironment(
+    'SOCKET_URL',
+    defaultValue: 'http://10.0.2.2:3000',
+  );
 
   /// Minimum GPS update interval in milliseconds.
   static const int gpsIntervalMs = 5000;

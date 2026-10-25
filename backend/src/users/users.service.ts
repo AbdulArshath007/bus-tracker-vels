@@ -1,9 +1,5 @@
 // ─── Users Service ────────────────────────────────────────────────────────────
-import {
-  Injectable,
-  ConflictException,
-  ForbiddenException,
-} from '@nestjs/common';
+import { Injectable, ConflictException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import * as bcrypt from 'bcrypt';
@@ -31,13 +27,19 @@ export class CreateUserDto {
 }
 
 export class UpdateUserDto {
-  @ApiProperty({ required: false }) @IsOptional() @IsString() full_name?: string;
+  @ApiProperty({ required: false })
+  @IsOptional()
+  @IsString()
+  full_name?: string;
   @ApiProperty({ required: false }) @IsOptional() @IsString() phone?: string;
   @ApiProperty({ required: false }) @IsOptional() @IsEmail() email?: string;
   @ApiProperty({ required: false }) @IsOptional() language_pref?: 'en' | 'ta';
   @ApiProperty({ required: false }) @IsOptional() theme_pref?: 'light' | 'dark';
   @ApiProperty({ required: false }) @IsOptional() fcm_token?: string;
-  @ApiProperty({ required: false }) @IsOptional() @IsBoolean() is_active?: boolean;
+  @ApiProperty({ required: false })
+  @IsOptional()
+  @IsBoolean()
+  is_active?: boolean;
 }
 
 @Injectable()
@@ -72,8 +74,15 @@ export class UsersService {
       qb.andWhere('u.created_at < :cursor', { cursor: filters.cursor });
 
     qb.select([
-      'u.id', 'u.email', 'u.role', 'u.fullName', 'u.phone',
-      'u.languagePref', 'u.themePref', 'u.isActive', 'u.createdAt',
+      'u.id',
+      'u.email',
+      'u.role',
+      'u.fullName',
+      'u.phone',
+      'u.languagePref',
+      'u.themePref',
+      'u.isActive',
+      'u.createdAt',
     ])
       .orderBy('u.created_at', 'DESC')
       .take(limit + 1);
@@ -105,7 +114,8 @@ export class UsersService {
       metadata: { role: dto.role, email: dto.email },
     });
 
-    const { passwordHash: _, ...safe } = user as any;
+    const safe = { ...user };
+    delete (safe as any).passwordHash;
     return safe;
   }
 
@@ -125,7 +135,8 @@ export class UsersService {
     if (dto.theme_pref) user.themePref = dto.theme_pref;
     if (dto.fcm_token !== undefined) user.fcmToken = dto.fcm_token;
     await this.repo.save(user);
-    const { passwordHash: _, ...safe } = user as any;
+    const safe = { ...user };
+    delete (safe as any).passwordHash;
     return safe;
   }
 
@@ -146,7 +157,8 @@ export class UsersService {
       targetType: 'user',
       targetId,
     });
-    const { passwordHash: _, ...safe } = user as any;
+    const safe = { ...user };
+    delete (safe as any).passwordHash;
     return safe;
   }
 

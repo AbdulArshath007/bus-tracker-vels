@@ -16,9 +16,7 @@ export interface AuditEntry {
 
 @Injectable()
 export class AuditService {
-  constructor(
-    @InjectRepository(AuditLog) private repo: Repository<AuditLog>,
-  ) {}
+  constructor(@InjectRepository(AuditLog) private repo: Repository<AuditLog>) {}
 
   async log(entry: AuditEntry): Promise<void> {
     const record = this.repo.create({
@@ -30,10 +28,11 @@ export class AuditService {
       metadata: entry.metadata ?? undefined,
       ipAddress: entry.ipAddress ?? undefined,
     });
-    // Fire-and-forget; audit writes must not block the main request
-    this.repo.save(record).catch(() => {
+    try {
+      await this.repo.save(record);
+    } catch {
       // Structured log only — audit failures should never propagate to caller
-    });
+    }
   }
 
   async search(filters: {
@@ -49,16 +48,21 @@ export class AuditService {
     const limit = Math.min(filters.limit ?? 50, 100);
     const qb = this.repo.createQueryBuilder('al');
 
-    if (filters.actorId) qb.andWhere('al.actor_id = :actorId', { actorId: filters.actorId });
-    if (filters.action) qb.andWhere('al.action ILIKE :action', { action: `%${filters.action}%` });
-    if (filters.targetType) qb.andWhere('al.target_type = :targetType', { targetType: filters.targetType });
-    if (filters.from) qb.andWhere('al.created_at >= :from', { from: filters.from });
+    if (filters.actorId)
+      qb.andWhere('al.actor_id = :actorId', { actorId: filters.actorId });
+    if (filters.action)
+      qb.andWhere('al.action ILIKE :action', { action: `%${filters.action}%` });
+    if (filters.targetType)
+      qb.andWhere('al.target_type = :targetType', {
+        targetType: filters.targetType,
+      });
+    if (filters.from)
+      qb.andWhere('al.created_at >= :from', { from: filters.from });
     if (filters.to) qb.andWhere('al.created_at <= :to', { to: filters.to });
     if (filters.q) {
-      qb.andWhere(
-        `(al.action ILIKE :q OR al.target_id::text ILIKE :q)`,
-        { q: `%${filters.q}%` },
-      );
+      qb.andWhere(`(al.action ILIKE :q OR al.target_id::text ILIKE :q)`, {
+        q: `%${filters.q}%`,
+      });
     }
     if (filters.cursor) {
       qb.andWhere('al.id < :cursor', { cursor: filters.cursor });

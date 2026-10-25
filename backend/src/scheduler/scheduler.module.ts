@@ -13,7 +13,13 @@ import { NotificationsModule } from '../notifications/notifications.module';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([AuditLog, NotificationLog, ScheduledJobLog, Route, Stop]),
+    TypeOrmModule.forFeature([
+      AuditLog,
+      NotificationLog,
+      ScheduledJobLog,
+      Route,
+      Stop,
+    ]),
     ChatModule,
     RidesModule,
     AuditModule,

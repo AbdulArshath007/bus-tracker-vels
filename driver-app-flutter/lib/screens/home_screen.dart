@@ -9,7 +9,6 @@ import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:vels_driver/providers/location_provider.dart';
 import 'package:skeletonizer/skeletonizer.dart';
-import 'package:vels_driver/screens/settings_screen.dart';
 
 class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({super.key});

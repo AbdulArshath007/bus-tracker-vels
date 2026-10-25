@@ -77,8 +77,8 @@ class _BadgeState extends State<_Badge> with SingleTickerProviderStateMixin {
               width: 8,
               height: 8,
               decoration: BoxDecoration(
-                color: color.withOpacity(
-                  isActive ? _pulseAnimation.value : 0.8,
+                color: color.withValues(
+                  alpha: isActive ? _pulseAnimation.value : 0.8,
                 ),
                 shape: BoxShape.circle,
               ),

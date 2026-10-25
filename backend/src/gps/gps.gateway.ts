@@ -7,10 +7,9 @@ import {
   OnGatewayDisconnect,
   MessageBody,
   ConnectedSocket,
-  WsException,
 } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
-import { Logger, UseGuards } from '@nestjs/common';
+import { Logger } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, In } from 'typeorm';
@@ -122,7 +121,9 @@ export class GpsGateway implements OnGatewayConnection, OnGatewayDisconnect {
       if (user.role === 'admin') {
         socket.join('admin:all');
         // Admins should join ALL chat rooms automatically
-        const rooms = await this.userRepo.manager.query('SELECT id FROM chat_rooms');
+        const rooms = await this.userRepo.manager.query(
+          'SELECT id FROM chat_rooms',
+        );
         for (const r of rooms) {
           socket.join(`chat:${r.id}`);
         }
@@ -158,7 +159,9 @@ export class GpsGateway implements OnGatewayConnection, OnGatewayDisconnect {
           });
         }
       } catch (err: any) {
-        this.logger.error(`Error in handleDisconnect for driver ${meta.userId}: ${err.message}`);
+        this.logger.error(
+          `Error in handleDisconnect for driver ${meta.userId}: ${err.message}`,
+        );
       }
     }
 
@@ -207,8 +210,10 @@ export class GpsGateway implements OnGatewayConnection, OnGatewayDisconnect {
         driverId: meta.userId,
         isLive: true,
       });
-    } catch (err) {
-      this.logger.warn(`Redis unavailable, skipping cache for ping on ride ${ride.id}`);
+    } catch (_err) {
+      this.logger.warn(
+        `Redis unavailable, skipping cache for ping on ride ${ride.id}`,
+      );
     }
 
     // 2. Update socket meta with current busId
@@ -300,7 +305,10 @@ export class GpsGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
   // ── Chat typing indicator ──────────────────────────────────────────────────
   @SubscribeMessage('chat.typing')
-  handleTyping(@ConnectedSocket() socket: Socket, @MessageBody() data: { room_id: string }) {
+  handleTyping(
+    @ConnectedSocket() socket: Socket,
+    @MessageBody() data: { room_id: string },
+  ) {
     const meta = this.socketMeta.get(socket.id);
     if (!meta) return;
 
@@ -314,7 +322,10 @@ export class GpsGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
   // ── Join Chat Room dynamically ──────────────────────────────────────────────
   @SubscribeMessage('chat.join')
-  async handleChatJoin(@ConnectedSocket() socket: Socket, @MessageBody() data: { room_id: string }) {
+  async handleChatJoin(
+    @ConnectedSocket() socket: Socket,
+    @MessageBody() data: { room_id: string },
+  ) {
     const meta = this.socketMeta.get(socket.id);
     if (!meta) return;
 
@@ -342,7 +353,10 @@ export class GpsGateway implements OnGatewayConnection, OnGatewayDisconnect {
   }
 
   emitToChat(roomId: string, event: string, payload: unknown) {
-    console.log(`[GpsGateway] Emitting ${event} to room chat:${roomId}`, payload);
+    console.log(
+      `[GpsGateway] Emitting ${event} to room chat:${roomId}`,
+      payload,
+    );
     this.server.to(`chat:${roomId}`).emit(event, payload);
   }
 
@@ -356,7 +370,9 @@ export class GpsGateway implements OnGatewayConnection, OnGatewayDisconnect {
   // ── Ping buffer flush ──────────────────────────────────────────────────────
   private scheduleFlush() {
     if (flushTimeout) return;
-    flushTimeout = setTimeout(() => this.flushPings(), 5000);
+    flushTimeout = setTimeout(() => {
+      void this.flushPings();
+    }, 5000);
   }
 
   private async flushPings() {

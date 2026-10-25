@@ -9,7 +9,10 @@ import { BusesController } from './buses.controller';
 import { AuditModule } from '../audit/audit.module';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Bus, BusAssignment, Route, User]), AuditModule],
+  imports: [
+    TypeOrmModule.forFeature([Bus, BusAssignment, Route, User]),
+    AuditModule,
+  ],
   providers: [BusesService],
   controllers: [BusesController],
   exports: [BusesService],

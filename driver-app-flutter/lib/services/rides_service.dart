@@ -1,4 +1,3 @@
-import 'package:vels_driver/core/api_client.dart';
 import 'package:vels_driver/models/ride.dart';
 
 class RidesException implements Exception {
@@ -12,50 +11,31 @@ class RidesException implements Exception {
 class RidesService {
   RidesService();
 
-  final _dio = ApiClient.instance.dio;
-
   // ─── Start a new ride ──────────────────────────────────────────
 
   Future<Ride> startRide() async {
-    final response = await _dio.post<Map<String, dynamic>>('rides');
-    return _parseRide(response.data, 'startRide');
+    await Future.delayed(const Duration(seconds: 1)); // simulate delay
+    return Ride(id: 'mock_ride_1', busId: 'bus_1', driverId: 'guest_123', status: 'active', startedAt: DateTime.now().toIso8601String());
   }
 
   // ─── Get active ride for a bus ────────────────────────────────
 
   Future<Ride?> getActiveRide(String busId) async {
-    final response = await _dio.get<Map<String, dynamic>>(
-      'rides/active',
-      queryParameters: {'bus_id': busId},
-    );
-    if (response.statusCode == 404 || response.data == null) return null;
-    return Ride.fromJson(response.data!);
+    await Future.delayed(const Duration(milliseconds: 500));
+    return null;
   }
 
   // ─── Mark destination reached ─────────────────────────────────
 
   Future<Ride> markDestinationReached(String rideId) async {
-    final response = await _dio.patch<Map<String, dynamic>>(
-      'rides/$rideId/destination-reached',
-    );
-    return _parseRide(response.data, 'markDestinationReached');
+    await Future.delayed(const Duration(seconds: 1));
+    return Ride(id: 'mock_ride_1', busId: 'bus_1', driverId: 'guest_123', status: 'destination_reached', startedAt: DateTime.now().toIso8601String());
   }
 
   // ─── End ride ─────────────────────────────────────────────────
 
   Future<Ride> endRide(String rideId) async {
-    final response = await _dio.patch<Map<String, dynamic>>(
-      'rides/$rideId/end',
-    );
-    return _parseRide(response.data, 'endRide');
-  }
-
-  // ─── Helpers ──────────────────────────────────────────────────
-
-  Ride _parseRide(Map<String, dynamic>? data, String operation) {
-    if (data == null) {
-      throw RidesException('$operation: server returned empty body.');
-    }
-    return Ride.fromJson(data);
+    await Future.delayed(const Duration(seconds: 1));
+    return Ride(id: 'mock_ride_1', busId: 'bus_1', driverId: 'guest_123', status: 'completed', startedAt: DateTime.now().toIso8601String());
   }
 }

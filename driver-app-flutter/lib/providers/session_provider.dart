@@ -1,6 +1,5 @@
 import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:vels_driver/core/api_client.dart';
 import 'package:vels_driver/core/session_manager.dart';
 import 'package:vels_driver/models/user_profile.dart';
 import 'package:vels_driver/services/auth_service.dart';
@@ -88,6 +87,14 @@ class AuthNotifier extends StateNotifier<AuthState> {
           : const AuthError('Login succeeded but user profile was not received.');
     } on AuthException catch (e) {
       state = AuthError(e.message);
+    } on DioException catch (e) {
+      if (e.type == DioExceptionType.receiveTimeout || e.type == DioExceptionType.connectionTimeout) {
+        state = const AuthError('The server is waking up. Please try again in a few seconds.');
+      } else if (e.type == DioExceptionType.badResponse) {
+        state = AuthError('Server error: ${e.response?.statusCode}. Please check if the backend is running properly.');
+      } else {
+        state = AuthError('Network error: ${e.message ?? e.error ?? e.type.name}');
+      }
     } catch (e) {
       state = AuthError('Unexpected error: $e');
     }
@@ -103,6 +110,14 @@ class AuthNotifier extends StateNotifier<AuthState> {
           : const AuthError('Guest login succeeded but user profile was not received.');
     } on AuthException catch (e) {
       state = AuthError(e.message);
+    } on DioException catch (e) {
+      if (e.type == DioExceptionType.receiveTimeout || e.type == DioExceptionType.connectionTimeout) {
+        state = const AuthError('The server is waking up. Please try again in a few seconds.');
+      } else if (e.type == DioExceptionType.badResponse) {
+        state = AuthError('Server error: ${e.response?.statusCode}. Please check if the backend is running properly.');
+      } else {
+        state = AuthError('Network error: ${e.message ?? e.error ?? e.type.name}');
+      }
     } catch (e) {
       state = AuthError('Unexpected error: $e');
     }
@@ -120,8 +135,8 @@ class AuthNotifier extends StateNotifier<AuthState> {
         phone: phone,
       );
       state = AuthAuthenticated(updated);
-    } on AuthException catch (e) {
-      throw e;
+    } on AuthException {
+      rethrow;
     } catch (e) {
       throw AuthException('Failed to update profile: $e');
     }

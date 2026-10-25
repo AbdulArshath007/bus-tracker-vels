@@ -1,4 +1,3 @@
-import 'dart:isolate';
 import 'package:flutter_foreground_task/flutter_foreground_task.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:vels_driver/core/gps_manager.dart';

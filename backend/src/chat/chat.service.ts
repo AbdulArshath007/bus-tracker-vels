@@ -106,7 +106,11 @@ export class ChatService {
       if (existing) await this.memberRepo.remove(existing);
     }
 
-    const member = this.memberRepo.create({ roomId, userId, roleInRoom: roleInRoom as any });
+    const member = this.memberRepo.create({
+      roomId,
+      userId,
+      roleInRoom: roleInRoom as any,
+    });
     return this.memberRepo.save(member);
   }
 
@@ -130,8 +134,11 @@ export class ChatService {
       content,
     });
     await this.msgRepo.save(msg);
-    
-    console.log(`[ChatService] Broadcasting message ${msg.id} to room ${roomId}. _gateway is:`, !!_gateway);
+
+    console.log(
+      `[ChatService] Broadcasting message ${msg.id} to room ${roomId}. _gateway is:`,
+      !!_gateway,
+    );
 
     // Broadcast
     _gateway?.emitToChat(roomId, 'chat.message', {
@@ -272,16 +279,14 @@ export class ChatService {
     if (att.isPurged) throw new GoneException('Attachment has expired.');
 
     const url = await this.s3.presign(att.storageKey);
-    const ttl = this.configService.get<number>('s3.presignedUrlTtlSeconds') || 300;
+    const ttl =
+      this.configService.get<number>('s3.presignedUrlTtlSeconds') || 300;
     const expiresAt = new Date(Date.now() + ttl * 1000);
     return { download_url: url, expires_at: expiresAt };
   }
 
   // ── Moderate (admin delete) ───────────────────────────────────────────────
-  async deleteMessage(
-    messageId: string,
-    admin: User,
-  ): Promise<void> {
+  async deleteMessage(messageId: string, admin: User): Promise<void> {
     const msg = await this.msgRepo.findOne({ where: { id: messageId } });
     if (!msg) throw new NotFoundException('Message not found.');
 
@@ -363,7 +368,8 @@ export class ChatService {
   }
 
   private async sendFailureAlert(jobName: string, error: string) {
-    const webhookUrl = this.configService.get<string>('ALERT_WEBHOOK_URL') ||
+    const webhookUrl =
+      this.configService.get<string>('ALERT_WEBHOOK_URL') ||
       process.env.ALERT_WEBHOOK_URL;
     if (!webhookUrl) return;
 
@@ -372,13 +378,15 @@ export class ChatService {
         () => ({ default: null }),
       );
       if (!fetch) return;
-      await (fetch as any)(webhookUrl, {
+      await fetch(webhookUrl, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           text: `[BusTrack] Cleanup job "${jobName}" FAILED: ${error}`,
         }),
       });
-    } catch {}
+    } catch (err) {
+      this.logger.warn(`Failed to post to alert webhook: ${err}`);
+    }
   }
 }

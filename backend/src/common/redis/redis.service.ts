@@ -43,10 +43,7 @@ export class RedisService implements OnModuleDestroy {
     return `bus:location:${busId}`;
   }
 
-  async setLocation(
-    busId: string,
-    loc: LastKnownLocation,
-  ): Promise<void> {
+  async setLocation(busId: string, loc: LastKnownLocation): Promise<void> {
     await this.client.set(
       this.busKey(busId),
       JSON.stringify(loc),
