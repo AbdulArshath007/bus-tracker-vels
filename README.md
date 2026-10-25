@@ -52,6 +52,18 @@ A robust mobile application carried by bus drivers to broadcast their location a
   - Interactive Route Map
   - Secure offline session storage and JWT injection
 
+### 4. Student Mobile Application (`/student-app-flutter`)
+A dedicated mobile application designed for VELS students with matching UI aesthetics to track their bus in real-time.
+- **Framework:** Flutter & Dart
+- **State Management:** Riverpod
+- **Mapping:** `flutter_map`
+- **Features:**
+  - Real-time GPS bus tracking and live ETA calculations
+  - Approaching stop alarm and proximity notifications
+  - Bilingual route schedule & timeline (English + Tamil)
+  - Route Group Chat connecting students and drivers
+  - Dark / Light mode and language preferences
+
 ---
 
 ## 🚀 Key Features
