@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:vels_driver/app_config.dart';
 import 'package:vels_driver/models/chat_message.dart';
 import 'package:vels_driver/providers/chat_provider.dart';
+import 'package:vels_driver/providers/session_provider.dart';
 
 class ChatScreen extends ConsumerStatefulWidget {
   const ChatScreen({super.key});
@@ -34,7 +35,10 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
   Widget build(BuildContext context) {
     final messages = ref.watch(chatProvider);
     final hasRoom = ref.read(chatProvider.notifier).hasRoom;
-    final roomName = ref.read(chatProvider.notifier).roomName ?? 'Route Chat';
+    final roomName = ref.read(chatProvider.notifier).roomName ?? 'Route 14 Bus Chat';
+    final authState = ref.watch(authProvider);
+    final user = authState is AuthAuthenticated ? authState.user : null;
+    final myId = user?.id ?? '';
 
     return Scaffold(
       appBar: AppBar(
@@ -49,7 +53,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                     child: Padding(
                       padding: const EdgeInsets.all(24.0),
                       child: Text(
-                        'Contact the management to get added into the groupchat according to your bus route.',
+                        'Contact university transport management to join your designated route group chat.',
                         textAlign: TextAlign.center,
                         style: TextStyle(
                           fontSize: 16,
@@ -65,7 +69,13 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                         reverse: true,
                         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                         itemCount: messages.length,
-                        itemBuilder: (_, i) => _ChatBubble(message: messages[i]),
+                        itemBuilder: (_, i) {
+                          final msg = messages[i];
+                          final isMe = (msg.senderId == myId) ||
+                              (user?.isDriver == true && msg.isFromDriver) ||
+                              (user?.isStudent == true && msg.senderRole == 'student' && msg.senderName.contains('You'));
+                          return _ChatBubble(message: msg, isMe: isMe);
+                        },
                       ),
           ),
           if (hasRoom)
@@ -80,16 +90,15 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
 }
 
 class _ChatBubble extends StatelessWidget {
-  const _ChatBubble({required this.message});
+  const _ChatBubble({required this.message, required this.isMe});
   final ChatMessage message;
+  final bool isMe;
 
   @override
   Widget build(BuildContext context) {
-    final isDriver = message.isFromDriver;
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
 
-    // Capitalize first letter of role
     final roleDisplay = message.senderRole.isEmpty 
         ? '' 
         : message.senderRole[0].toUpperCase() + message.senderRole.substring(1);
@@ -97,10 +106,10 @@ class _ChatBubble extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 4),
       child: Row(
-        mainAxisAlignment: isDriver ? MainAxisAlignment.end : MainAxisAlignment.start,
+        mainAxisAlignment: isMe ? MainAxisAlignment.end : MainAxisAlignment.start,
         crossAxisAlignment: CrossAxisAlignment.end,
         children: [
-          if (!isDriver) ...[
+          if (!isMe) ...[
             CircleAvatar(
               radius: 16,
               backgroundColor: theme.colorScheme.secondary.withValues(alpha: 0.2),
@@ -116,9 +125,9 @@ class _ChatBubble extends StatelessWidget {
           ],
           Flexible(
             child: Column(
-              crossAxisAlignment: isDriver ? CrossAxisAlignment.end : CrossAxisAlignment.start,
+              crossAxisAlignment: isMe ? CrossAxisAlignment.end : CrossAxisAlignment.start,
               children: [
-                if (!isDriver)
+                if (!isMe)
                   Padding(
                     padding: const EdgeInsets.only(left: 4, bottom: 4),
                     child: Text.rich(
@@ -150,9 +159,9 @@ class _ChatBubble extends StatelessWidget {
                     maxWidth: MediaQuery.of(context).size.width * 0.75,
                   ),
                   decoration: BoxDecoration(
-                    color: isDriver ? theme.primaryColor : theme.colorScheme.surface,
+                    color: isMe ? theme.primaryColor : theme.colorScheme.surface,
                     borderRadius: BorderRadius.circular(6),
-                    border: isDriver
+                    border: isMe
                         ? null
                         : Border.all(
                             color: isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0),
@@ -163,7 +172,7 @@ class _ChatBubble extends StatelessWidget {
                       ? Text(
                           'This message was deleted.',
                           style: TextStyle(
-                            color: isDriver
+                            color: isMe
                                 ? Colors.white.withValues(alpha: 0.8)
                                 : theme.textTheme.bodyMedium?.color?.withValues(alpha: 0.8),
                             fontSize: 14,
@@ -173,7 +182,7 @@ class _ChatBubble extends StatelessWidget {
                       : Text(
                           message.content ?? '',
                           style: TextStyle(
-                            color: isDriver ? Colors.white : theme.textTheme.bodyMedium?.color,
+                            color: isMe ? Colors.white : theme.textTheme.bodyMedium?.color,
                             fontSize: 14,
                           ),
                         ),

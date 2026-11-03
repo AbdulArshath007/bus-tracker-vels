@@ -26,7 +26,7 @@ export class AuthService {
     private dataSource: DataSource,
   ) {}
 
-  // ── Login ──────────────────────────────────────────────────────────────────
+  // ── Login (Mock Login Bypass) ──────────────────────────────────────────────
   async login(
     email: string,
     password: string,
@@ -37,29 +37,33 @@ export class AuthService {
     expires_in: number;
     user: Partial<User>;
   }> {
-    // Always perform the comparison to prevent timing attacks
-    const user = await this.userRepo.findOne({
-      where: { email, isActive: true },
+    let user = await this.userRepo.findOne({
+      where: { email },
     });
 
-    const dummyHash =
-      '$2b$12$invalidhashtopreventtimingattack.......................';
-    const passwordMatch = await bcrypt.compare(
-      password,
-      user ? user.passwordHash : dummyHash,
-    );
+    if (!user) {
+      const lower = (email || '').toLowerCase();
+      let role: any = 'driver';
+      let name = 'Velan (Driver)';
+      if (lower.includes('admin')) {
+        role = 'admin';
+        name = 'VELS Admin';
+      } else if (lower.includes('student')) {
+        role = 'student';
+        name = 'Student';
+      }
 
-    if (!user || !passwordMatch) {
-      await this.auditService.log({
-        actorId: undefined,
-        action: 'auth.login_failed',
-        targetType: 'user',
-        targetId: undefined,
-        ipAddress,
-        metadata: { email },
-      });
-      // Generic message — never confirm whether email exists
-      throw new UnauthorizedException('Invalid credentials.');
+      user = await this.userRepo.findOne({ where: { role, isActive: true } });
+      if (!user) {
+        user = this.userRepo.create({
+          email: email || `user_${Date.now()}@vels.edu`,
+          passwordHash: await bcrypt.hash('mockpassword', 10),
+          fullName: name,
+          role,
+          isActive: true,
+        });
+        user = await this.userRepo.save(user);
+      }
     }
 
     const tokens = await this.issueTokens(user);
@@ -100,10 +104,16 @@ export class AuthService {
     });
 
     if (!user) {
+      const name =
+        role === 'admin'
+          ? 'Guest Admin'
+          : role === 'student'
+            ? 'Guest Student'
+            : 'Guest Driver';
       user = this.userRepo.create({
-        email: `guest_${Date.now()}@vels.edu`,
+        email: `guest_${role}_${Date.now()}@vels.edu`,
         passwordHash: await bcrypt.hash('guestpassword', 10),
-        fullName: 'Guest Driver',
+        fullName: name,
         role: role as any,
         isActive: true,
       });

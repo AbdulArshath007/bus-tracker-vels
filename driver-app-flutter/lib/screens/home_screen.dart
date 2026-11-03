@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'package:vels_driver/app_config.dart';
 import 'package:vels_driver/providers/ride_provider.dart';
 import 'package:vels_driver/providers/session_provider.dart';
 import 'package:vels_driver/widgets/ride_status_card.dart';
@@ -8,7 +10,7 @@ import 'package:vels_driver/widgets/swipe_button.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:vels_driver/providers/location_provider.dart';
-import 'package:skeletonizer/skeletonizer.dart';
+import 'package:vels_driver/theme/app_theme.dart';
 
 class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({super.key});
@@ -18,6 +20,8 @@ class HomeScreen extends ConsumerStatefulWidget {
 }
 
 class _HomeScreenState extends ConsumerState<HomeScreen> {
+  final MapController _mapController = MapController();
+
   @override
   void initState() {
     super.initState();
@@ -58,6 +62,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     final rideState = ref.watch(rideProvider);
     final authState = ref.watch(authProvider);
     final theme = Theme.of(context);
+    final isRideActive = rideState is RideActive;
 
     ref.listen<RideState>(rideProvider, (_, next) {
       if (next is RideError) _showError(next.message);
@@ -111,44 +116,132 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                     child: Consumer(
                       builder: (context, ref, child) {
                         final locationAsync = ref.watch(locationProvider);
+                        final currentPos = locationAsync.valueOrNull ?? createMockPosition();
+                        final latLng = LatLng(currentPos.latitude, currentPos.longitude);
 
-                        return locationAsync.when(
-                          data: (position) => FlutterMap(
-                            options: MapOptions(
-                              initialCenter: LatLng(
-                                  position.latitude, position.longitude),
-                              initialZoom: 16.0,
-                            ),
-                            children: [
-                              TileLayer(
-                                urlTemplate:
-                                    'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
-                                userAgentPackageName:
-                                    'com.vels.bustracker.driver',
+                        return Stack(
+                          children: [
+                            FlutterMap(
+                              mapController: _mapController,
+                              options: MapOptions(
+                                initialCenter: isRideActive
+                                    ? latLng
+                                    : const LatLng(AppConfig.defaultLat, AppConfig.defaultLng),
+                                initialZoom: 15.5,
                               ),
-                              MarkerLayer(
-                                markers: [
-                                  Marker(
-                                    point: LatLng(position.latitude,
-                                        position.longitude),
-                                    width: 40,
-                                    height: 40,
-                                    child: Icon(
-                                        Icons.directions_bus_rounded,
-                                        color: theme.primaryColor,
-                                        size: 40),
+                              children: [
+                                TileLayer(
+                                  urlTemplate:
+                                      'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+                                  userAgentPackageName:
+                                      'com.vels.bustracker.driver',
+                                ),
+                                // ONLY show device location pin AFTER Swipe to Start
+                                if (isRideActive)
+                                  MarkerLayer(
+                                    markers: [
+                                      Marker(
+                                        point: latLng,
+                                        width: 56,
+                                        height: 56,
+                                        child: Stack(
+                                          alignment: Alignment.center,
+                                          children: [
+                                            // Radar pulse halo
+                                            Container(
+                                              width: 56,
+                                              height: 56,
+                                              decoration: BoxDecoration(
+                                                shape: BoxShape.circle,
+                                                color: theme.primaryColor.withValues(alpha: 0.25),
+                                              ),
+                                            ),
+                                            Container(
+                                              width: 42,
+                                              height: 42,
+                                              decoration: BoxDecoration(
+                                                color: theme.primaryColor,
+                                                shape: BoxShape.circle,
+                                                border: Border.all(color: Colors.white, width: 2.5),
+                                                boxShadow: [
+                                                  BoxShadow(
+                                                    color: Colors.black.withValues(alpha: 0.25),
+                                                    blurRadius: 6,
+                                                  ),
+                                                ],
+                                              ),
+                                              child: const Center(
+                                                child: Icon(
+                                                  Icons.directions_bus_rounded,
+                                                  color: Colors.white,
+                                                  size: 24,
+                                                ),
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    ],
                                   ),
-                                ],
+                              ],
+                            ),
+
+                            // Status Overlay Banner at top of map
+                            Positioned(
+                              top: 12,
+                              left: 12,
+                              right: 12,
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                                decoration: BoxDecoration(
+                                  color: Colors.white.withValues(alpha: 0.95),
+                                  borderRadius: BorderRadius.circular(24),
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: Colors.black.withValues(alpha: 0.1),
+                                      blurRadius: 8,
+                                      offset: const Offset(0, 2),
+                                    ),
+                                  ],
+                                  border: Border.all(color: AppTheme.border),
+                                ),
+                                child: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Container(
+                                      width: 10,
+                                      height: 10,
+                                      decoration: BoxDecoration(
+                                        shape: BoxShape.circle,
+                                        color: isRideActive ? AppTheme.success : AppTheme.warning,
+                                      ),
+                                    ),
+                                    const SizedBox(width: 8),
+                                    Expanded(
+                                      child: Text(
+                                        isRideActive
+                                            ? 'Live Device GPS: ${latLng.latitude.toStringAsFixed(4)}, ${latLng.longitude.toStringAsFixed(4)}'
+                                            : 'Location Hidden • Swipe below to start ride',
+                                        style: TextStyle(
+                                          fontSize: 12,
+                                          fontWeight: FontWeight.w600,
+                                          color: isRideActive ? AppTheme.textPrimary : AppTheme.textSecondary,
+                                        ),
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
+                                    ),
+                                    if (isRideActive)
+                                      IconButton(
+                                        icon: const Icon(Icons.my_location, size: 18, color: AppTheme.primary),
+                                        padding: EdgeInsets.zero,
+                                        constraints: const BoxConstraints(),
+                                        onPressed: () => _mapController.move(latLng, 16.0),
+                                      ),
+                                  ],
+                                ),
                               ),
-                            ],
-                          ),
-                          loading: () => Skeletonizer(
-                            enabled: true,
-                            child:
-                                Container(color: Colors.grey.shade300),
-                          ),
-                          error: (err, stack) => const Center(
-                              child: Text('Failed to load map')),
+                            ),
+                          ],
                         );
                       },
                     ),
@@ -238,45 +331,26 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             padding: const EdgeInsets.symmetric(vertical: 16),
             child: Column(
               children: [
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                      horizontal: 16, vertical: 8),
-                  decoration: BoxDecoration(
-                    color: theme.primaryColor.withValues(alpha: 0.12),
-                    borderRadius: BorderRadius.circular(4),
-                    border: Border.all(
-                        color:
-                            theme.primaryColor.withValues(alpha: 0.3)),
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Icon(Icons.check_circle_rounded,
-                          color: theme.primaryColor, size: 18),
-                      const SizedBox(width: 8),
-                      Text(
-                        'Destination Reached',
-                        style: TextStyle(
-                          color: theme.primaryColor,
-                          fontWeight: FontWeight.w600,
-                          fontSize: 14,
-                        ),
-                      ),
-                    ],
+                const Text(
+                  'Destination Reached!',
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w700,
+                    color: AppTheme.success,
                   ),
                 ),
-                const SizedBox(height: 16),
+                const SizedBox(height: 12),
                 SwipeButton(
-                  label: 'Swipe to End Ride',
-                  thumbColor: theme.colorScheme.error,
-                  icon: Icons.stop_rounded,
+                  label: 'Swipe to Complete',
+                  thumbColor: AppTheme.success,
+                  icon: Icons.check_circle_rounded,
                   onSwipeComplete: () =>
                       ref.read(rideProvider.notifier).endRide(),
                 ),
               ],
             ),
           ),
-        RideError() => const SizedBox.shrink(key: ValueKey('error')),
+        _ => const SizedBox.shrink(),
       },
     );
   }

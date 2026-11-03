@@ -1,5 +1,7 @@
 import 'dart:async';
+import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:vels_driver/core/api_client.dart';
 import 'package:vels_driver/core/session_manager.dart';
 import 'package:vels_driver/models/user_profile.dart';
 import 'package:vels_driver/services/auth_service.dart';
@@ -77,66 +79,50 @@ class AuthNotifier extends StateNotifier<AuthState> {
     super.dispose();
   }
 
-  Future<void> login({required String email, required String password}) async {
+  /// Role-based mock login (Driver or Student) with no DB/verification required!
+  Future<void> loginWithRole({
+    required String role,
+    String? email,
+    String? password,
+  }) async {
     state = const AuthLoading();
     try {
-      await _authService.login(email: email, password: password);
-      final user = await _session.getUser();
-      state = user != null
-          ? AuthAuthenticated(user)
-          : const AuthError('Login succeeded but user profile was not received.');
-    } on AuthException catch (e) {
-      state = AuthError(e.message);
-    } on DioException catch (e) {
-      if (e.type == DioExceptionType.receiveTimeout || e.type == DioExceptionType.connectionTimeout) {
-        state = const AuthError('The server is waking up. Please try again in a few seconds.');
-      } else if (e.type == DioExceptionType.badResponse) {
-        state = AuthError('Server error: ${e.response?.statusCode}. Please check if the backend is running properly.');
-      } else {
-        state = AuthError('Network error: ${e.message ?? e.error ?? e.type.name}');
-      }
+      final user = await _authService.loginWithRole(
+        role: role,
+        email: email,
+        password: password,
+      );
+      state = AuthAuthenticated(user);
     } catch (e) {
-      state = AuthError('Unexpected error: $e');
+      state = AuthError('Mock login failed: $e');
     }
   }
 
-  Future<void> guestLogin() async {
-    state = const AuthLoading();
-    try {
-      await _authService.guestLogin();
-      final user = await _session.getUser();
-      state = user != null
-          ? AuthAuthenticated(user)
-          : const AuthError('Guest login succeeded but user profile was not received.');
-    } on AuthException catch (e) {
-      state = AuthError(e.message);
-    } on DioException catch (e) {
-      if (e.type == DioExceptionType.receiveTimeout || e.type == DioExceptionType.connectionTimeout) {
-        state = const AuthError('The server is waking up. Please try again in a few seconds.');
-      } else if (e.type == DioExceptionType.badResponse) {
-        state = AuthError('Server error: ${e.response?.statusCode}. Please check if the backend is running properly.');
-      } else {
-        state = AuthError('Network error: ${e.message ?? e.error ?? e.type.name}');
-      }
-    } catch (e) {
-      state = AuthError('Unexpected error: $e');
-    }
+  Future<void> login({required String email, required String password}) async {
+    final role = email.toLowerCase().contains('student') ? 'student' : 'driver';
+    await loginWithRole(role: role, email: email, password: password);
+  }
+
+  Future<void> guestLogin({String role = 'driver'}) async {
+    await loginWithRole(role: role);
   }
 
   Future<void> updateProfile({
     String? name,
     String? email,
     String? phone,
+    String? boardingStopName,
+    String? languagePref,
   }) async {
     try {
       final updated = await _authService.updateProfile(
         name: name,
         email: email,
         phone: phone,
+        boardingStopName: boardingStopName,
+        languagePref: languagePref,
       );
       state = AuthAuthenticated(updated);
-    } on AuthException {
-      rethrow;
     } catch (e) {
       throw AuthException('Failed to update profile: $e');
     }

@@ -5,3 +5,7 @@ build/
 .DS_Store
 find_media.py
 vistas_logo.jpg
+
+*.apk
+*.png
+.kotlin/

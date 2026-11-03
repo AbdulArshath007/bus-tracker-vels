@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:vels_student/services/bus_service.dart';
-import 'package:vels_student/theme/app_theme.dart';
+import 'package:vels_driver/services/bus_service.dart';
+import 'package:vels_driver/theme/app_theme.dart';
 
 class BusSelectorSheet extends StatelessWidget {
   const BusSelectorSheet({
@@ -188,3 +188,4 @@ class BusSelectorSheet extends StatelessWidget {
     );
   }
 }
+

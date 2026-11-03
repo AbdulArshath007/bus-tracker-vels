@@ -4,10 +4,10 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:latlong2/latlong.dart';
-import 'package:vels_student/core/socket_manager.dart';
-import 'package:vels_student/models/bus_location.dart';
-import 'package:vels_student/models/route_stop.dart';
-import 'package:vels_student/services/bus_service.dart';
+import 'package:vels_driver/core/socket_manager.dart';
+import 'package:vels_driver/models/bus_location.dart';
+import 'package:vels_driver/models/route_stop.dart';
+import 'package:vels_driver/services/bus_service.dart';
 
 // ─── Student Tracking State ───────────────────────────────────────────────
 
@@ -88,6 +88,7 @@ class StudentBusNotifier extends StateNotifier<StudentTrackingState> {
 
   final BusService _busService;
   Timer? _simulationTimer;
+  StreamSubscription<Position>? _positionSubscription;
   int _simulationIndex = 0;
 
   Future<void> _initTracking() async {
@@ -101,7 +102,7 @@ class StudentBusNotifier extends StateNotifier<StudentTrackingState> {
       );
     } catch (_) {}
 
-    // 2. Fetch current student GPS position
+    // 2. Fetch current student GPS position and continuously stream it
     _determineStudentPosition();
 
     // 3. Connect to real-time WebSocket
@@ -113,15 +114,44 @@ class StudentBusNotifier extends StateNotifier<StudentTrackingState> {
 
   Future<void> _determineStudentPosition() async {
     try {
-      final permission = await Geolocator.checkPermission();
+      var permission = await Geolocator.checkPermission();
+      if (permission == LocationPermission.denied) {
+        permission = await Geolocator.requestPermission();
+      }
       if (permission == LocationPermission.always ||
           permission == LocationPermission.whileInUse) {
         final pos = await Geolocator.getCurrentPosition(
-          desiredAccuracy: LocationAccuracy.medium,
-        );
+          desiredAccuracy: LocationAccuracy.high,
+          timeLimit: const Duration(seconds: 4),
+        ).catchError((_) => Position(
+              latitude: 12.9462,
+              longitude: 80.1431,
+              timestamp: DateTime.now(),
+              accuracy: 5.0,
+              altitude: 10.0,
+              altitudeAccuracy: 1.0,
+              heading: 0.0,
+              headingAccuracy: 1.0,
+              speed: 0.0,
+              speedAccuracy: 0.0,
+            ));
         state = state.copyWith(
           studentLocation: LatLng(pos.latitude, pos.longitude),
         );
+
+        // Listen for live device position updates
+        _positionSubscription?.cancel();
+        _positionSubscription = Geolocator.getPositionStream(
+          locationSettings: const LocationSettings(
+            accuracy: LocationAccuracy.high,
+            distanceFilter: 5,
+          ),
+        ).listen((p) {
+          if (!mounted) return;
+          state = state.copyWith(
+            studentLocation: LatLng(p.latitude, p.longitude),
+          );
+        });
       } else {
         // Fallback default: Chromepet student boarding point
         state = state.copyWith(
@@ -189,12 +219,10 @@ class StudentBusNotifier extends StateNotifier<StudentTrackingState> {
         state.studentLocation!.longitude,
       );
       distanceKm = double.parse(d.toStringAsFixed(1));
-      // Approximate ETA based on current speed or 25 km/h in city
       final effectiveSpeed = speed > 5 ? speed : 25.0;
       eta = math.max(1, ((distanceKm / effectiveSpeed) * 60).round());
     }
 
-    // Determine status
     String status = 'active';
     if (distanceKm <= 1.0) {
       status = 'approaching';
@@ -223,7 +251,6 @@ class StudentBusNotifier extends StateNotifier<StudentTrackingState> {
       isLoading: true,
     );
 
-    // Load selected bus info
     final match = BusService.availableBuses.firstWhere(
       (b) => b['id'] == busId,
       orElse: () => BusService.availableBuses.first,
@@ -252,7 +279,6 @@ class StudentBusNotifier extends StateNotifier<StudentTrackingState> {
       _simulationIndex = (_simulationIndex + 1) % points.length;
       final pt = points[_simulationIndex];
 
-      // Add gentle variance
       final nextPt = points[(_simulationIndex + 1) % points.length];
       final heading = _calculateBearing(pt, nextPt);
 
@@ -291,6 +317,7 @@ class StudentBusNotifier extends StateNotifier<StudentTrackingState> {
   @override
   void dispose() {
     _simulationTimer?.cancel();
+    _positionSubscription?.cancel();
     super.dispose();
   }
 }
@@ -303,3 +330,4 @@ final studentBusProvider =
     StateNotifierProvider<StudentBusNotifier, StudentTrackingState>(
   (ref) => StudentBusNotifier(ref.read(busServiceProvider)),
 );
+

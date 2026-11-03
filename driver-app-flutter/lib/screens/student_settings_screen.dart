@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:vels_student/providers/session_provider.dart';
-import 'package:vels_student/providers/theme_provider.dart';
-import 'package:vels_student/theme/app_theme.dart';
+import 'package:go_router/go_router.dart';
+import 'package:vels_driver/providers/session_provider.dart';
+import 'package:vels_driver/providers/theme_provider.dart';
+import 'package:vels_driver/theme/app_theme.dart';
 
-class SettingsScreen extends ConsumerWidget {
-  const SettingsScreen({super.key});
+class StudentSettingsScreen extends ConsumerWidget {
+  const StudentSettingsScreen({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -27,7 +28,7 @@ class SettingsScreen extends ConsumerWidget {
       body: ListView(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
         children: [
-          // ── Profile Section ──────────────────────────────────────────────
+          // ── Student Profile Section ──────────────────────────────────────
           const _SectionLabel(label: 'STUDENT PROFILE'),
           const SizedBox(height: 8),
 
@@ -77,7 +78,7 @@ class SettingsScreen extends ConsumerWidget {
           _SettingsCard(
             icon: Icons.phone_outlined,
             title: 'Contact Phone',
-            subtitle: user?.phone ?? '+91 98401 23456',
+            subtitle: (user?.phone?.isNotEmpty == true) ? user!.phone! : '+91 98401 23456',
             onTap: () => _showEditDialog(
               context: context,
               title: 'Update Phone',
@@ -100,7 +101,8 @@ class SettingsScreen extends ConsumerWidget {
             subtitle: isDark ? 'Dark Mode (Activated)' : 'Light Mode (Standard)',
             trailing: Switch(
               value: isDark,
-              onChanged: (_) => ref.read(themeProvider.notifier).toggleTheme(),
+              activeColor: theme.primaryColor,
+              onChanged: (val) => ref.read(themeProvider.notifier).toggleTheme(val),
             ),
           ),
           const SizedBox(height: 10),
@@ -171,7 +173,7 @@ class SettingsScreen extends ConsumerWidget {
 
           Center(
             child: Text(
-              'VELS Student App v1.0.0\nVELS Institute of Science, Technology & Advanced Studies',
+              'VELS University Bus Tracker v1.0.0\nVELS Institute of Science, Technology & Advanced Studies',
               textAlign: TextAlign.center,
               style: TextStyle(
                 fontSize: 11,
@@ -243,7 +245,7 @@ class SettingsScreen extends ConsumerWidget {
             ListTile(
               title: const Text('English'),
               trailing: current == 'en'
-                  ? const Icon(Icons.check_circle_rounded, color: AppTheme.primary)
+                  ? const Icon(Icons.check_circle_rounded, color: AppTheme.lightPrimary)
                   : null,
               onTap: () {
                 ref.read(authProvider.notifier).updateProfile(languagePref: 'en');
@@ -253,7 +255,7 @@ class SettingsScreen extends ConsumerWidget {
             ListTile(
               title: const Text('தமிழ் (Tamil)'),
               trailing: current == 'ta'
-                  ? const Icon(Icons.check_circle_rounded, color: AppTheme.primary)
+                  ? const Icon(Icons.check_circle_rounded, color: AppTheme.lightPrimary)
                   : null,
               onTap: () {
                 ref.read(authProvider.notifier).updateProfile(languagePref: 'ta');
@@ -272,7 +274,7 @@ class SettingsScreen extends ConsumerWidget {
       builder: (ctx) => AlertDialog(
         title: const Text('Log Out'),
         content: const Text(
-          'Are you sure you want to log out of VELS Student Bus Tracker?',
+          'Are you sure you want to log out of VELS Bus Tracker?',
         ),
         actions: [
           TextButton(
@@ -281,9 +283,12 @@ class SettingsScreen extends ConsumerWidget {
           ),
           ElevatedButton(
             style: ElevatedButton.styleFrom(backgroundColor: AppTheme.danger),
-            onPressed: () {
+            onPressed: () async {
               Navigator.pop(ctx);
-              ref.read(authProvider.notifier).logout();
+              await ref.read(authProvider.notifier).logout();
+              if (context.mounted) {
+                context.go('/login');
+              }
             },
             child: const Text('Log Out'),
           ),
@@ -383,3 +388,4 @@ class _SettingsCard extends StatelessWidget {
     );
   }
 }
+

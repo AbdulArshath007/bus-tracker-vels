@@ -8,9 +8,6 @@ import 'package:vels_driver/core/session_manager.dart';
 enum SocketConnectionStatus { disconnected, connecting, connected, reconnecting, error }
 
 /// Manages the Socket.IO client connection.
-///
-/// Fixes:
-///   • #5 – Auth token is re-sent on every reconnect, not just the first connect.
 class SocketManager {
   SocketManager._();
 
@@ -58,7 +55,6 @@ class SocketManager {
         if (kDebugMode) debugPrint('[Socket] Reconnecting...');
       })
       ..onReconnect((_) async {
-        // ─── Fix #5: Re-authenticate on every reconnect ───────────
         final freshToken = await SessionManager.instance.getAccessToken();
         _socket?.auth = {'token': freshToken};
         _emit(SocketConnectionStatus.connected);
@@ -85,6 +81,18 @@ class SocketManager {
 
   void emitWithAck(String event, dynamic data, {required Function ackCallback}) {
     _socket?.emitWithAck(event, data, ack: ackCallback);
+  }
+
+  void joinBusRoom(String busId) {
+    emit('join:bus', {'busId': busId});
+  }
+
+  void joinRouteRoom(String routeId) {
+    emit('join:route', {'routeId': routeId});
+  }
+
+  void joinChatRoom(String roomId) {
+    emit('chat:join', {'roomId': roomId});
   }
 
   // ─── Subscribe ─────────────────────────────────────────────────

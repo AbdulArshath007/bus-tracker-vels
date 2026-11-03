@@ -1,23 +1,24 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:permission_handler/permission_handler.dart';
-import 'package:vels_student/app_config.dart';
-import 'package:vels_student/providers/session_provider.dart';
-import 'package:vels_student/providers/student_bus_provider.dart';
-import 'package:vels_student/theme/app_theme.dart';
-import 'package:vels_student/widgets/bus_selector_sheet.dart';
-import 'package:vels_student/widgets/bus_status_hero_card.dart';
+import 'package:vels_driver/app_config.dart';
+import 'package:vels_driver/providers/session_provider.dart';
+import 'package:vels_driver/providers/student_bus_provider.dart';
+import 'package:vels_driver/theme/app_theme.dart';
+import 'package:vels_driver/widgets/bus_selector_sheet.dart';
+import 'package:vels_driver/widgets/bus_status_hero_card.dart';
 
-class HomeScreen extends ConsumerStatefulWidget {
-  const HomeScreen({super.key});
+class StudentHomeScreen extends ConsumerStatefulWidget {
+  const StudentHomeScreen({super.key});
 
   @override
-  ConsumerState<HomeScreen> createState() => _HomeScreenState();
+  ConsumerState<StudentHomeScreen> createState() => _StudentHomeScreenState();
 }
 
-class _HomeScreenState extends ConsumerState<HomeScreen> {
+class _StudentHomeScreenState extends ConsumerState<StudentHomeScreen> {
   final MapController _mapController = MapController();
 
   @override
@@ -138,6 +139,16 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             icon: const Icon(Icons.alt_route_rounded),
             tooltip: 'Switch Bus Route',
           ),
+          IconButton(
+            icon: const Icon(Icons.logout_rounded, color: Colors.white),
+            tooltip: 'Logout / Switch Role',
+            onPressed: () async {
+              await ref.read(authProvider.notifier).logout();
+              if (context.mounted) {
+                context.go('/login');
+              }
+            },
+          ),
         ],
       ),
       body: Stack(
@@ -153,10 +164,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               ),
             ),
             children: [
-              // OpenStreetMap Standard Tiles
               TileLayer(
                 urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
-                userAgentPackageName: 'com.vels.bustracker.student',
+                userAgentPackageName: 'com.vels.bustracker.driver',
               ),
 
               // Route Polyline Layer
@@ -165,7 +175,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   Polyline(
                     points: trackingState.routePath,
                     strokeWidth: 5.0,
-                    color: AppTheme.primary.withValues(alpha: 0.8),
+                    color: theme.primaryColor.withValues(alpha: 0.8),
                   ),
                 ],
               ),
@@ -173,7 +183,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               // Route Stop Markers Layer
               MarkerLayer(
                 markers: [
-                  // Stops along route
                   for (final stop in trackingState.stops)
                     Marker(
                       point: LatLng(stop.latitude, stop.longitude),
@@ -187,7 +196,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                                 ? AppTheme.warning
                                 : (stop.isPassed
                                     ? Colors.grey.shade600
-                                    : AppTheme.primary),
+                                    : theme.primaryColor),
                             shape: BoxShape.circle,
                             border: Border.all(color: Colors.white, width: 2),
                             boxShadow: [
@@ -203,7 +212,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                                     size: 16, color: Colors.white)
                                 : Text(
                                     '${stop.sequenceNum}',
-                                    style: const TextStyle(
+                                    style: TextStyle(
                                       color: Colors.white,
                                       fontSize: 11,
                                       fontWeight: FontWeight.w700,
@@ -250,7 +259,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                       ),
                     ),
 
-                  // Live Bus Marker with Heading & Pulse
+                  // Live Bus Marker with Pulse
                   Marker(
                     point: busPos,
                     width: 54,
@@ -258,22 +267,20 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                     child: Stack(
                       alignment: Alignment.center,
                       children: [
-                        // Animated Pulse Background
                         Container(
                           width: 52,
                           height: 52,
                           decoration: BoxDecoration(
                             shape: BoxShape.circle,
-                            color: AppTheme.primary.withValues(alpha: 0.2),
+                            color: theme.primaryColor.withValues(alpha: 0.2),
                           ),
                         ),
-                        // Inner Bus Icon Badge
                         Container(
                           width: 38,
                           height: 38,
                           decoration: BoxDecoration(
                             shape: BoxShape.circle,
-                            color: AppTheme.primary,
+                            color: theme.primaryColor,
                             border: Border.all(color: Colors.white, width: 2.5),
                             boxShadow: [
                               BoxShadow(
@@ -305,6 +312,51 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 bus: bus,
                 onSwitchBus: _openBusSelector,
                 onCallDriver: () => _callDriver(bus.driverPhone, bus.driverName),
+              ),
+            ),
+          ),
+
+          // ── Device Location Pill ──────────────────────────────────────────
+          Positioned(
+            left: 16,
+            bottom: 24,
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              decoration: BoxDecoration(
+                color: Colors.white.withValues(alpha: 0.95),
+                borderRadius: BorderRadius.circular(20),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.1),
+                    blurRadius: 6,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
+                border: Border.all(color: AppTheme.border),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Container(
+                    width: 8,
+                    height: 8,
+                    decoration: const BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: AppTheme.accent,
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Text(
+                    trackingState.studentLocation != null
+                        ? 'Device GPS: ${trackingState.studentLocation!.latitude.toStringAsFixed(4)}, ${trackingState.studentLocation!.longitude.toStringAsFixed(4)}'
+                        : 'Acquiring Device GPS...',
+                    style: TextStyle(
+                      fontSize: 11,
+                      fontWeight: FontWeight.w600,
+                      color: AppTheme.textPrimary,
+                    ),
+                  ),
+                ],
               ),
             ),
           ),
@@ -388,3 +440,4 @@ class _MapControlButton extends StatelessWidget {
     );
   }
 }
+

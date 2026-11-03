@@ -1,176 +1,221 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:vels_driver/providers/session_provider.dart';
+import 'package:vels_driver/theme/app_theme.dart';
 
-class LoginScreen extends ConsumerStatefulWidget {
+class LoginScreen extends ConsumerWidget {
   const LoginScreen({super.key});
 
-  @override
-  ConsumerState<LoginScreen> createState() => _LoginScreenState();
-}
-
-class _LoginScreenState extends ConsumerState<LoginScreen> {
-  final _emailController = TextEditingController();
-  final _passwordController = TextEditingController();
-
-  @override
-  void dispose() {
-    _emailController.dispose();
-    _passwordController.dispose();
-    super.dispose();
+  void _enterAsRole(WidgetRef ref, String role) {
+    ref.read(authProvider.notifier).loginWithRole(
+          role: role,
+          email: role == 'driver' ? 'driver@vels.edu.in' : 'student@vistas.ac.in',
+          password: 'mock_password',
+        );
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final authState = ref.watch(authProvider);
     final isLoading = authState is AuthLoading;
-    final errorMsg = authState is AuthError ? authState.message : null;
     final theme = Theme.of(context);
 
     return Scaffold(
-      body: Center(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.symmetric(horizontal: 24),
-          child: ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: 500),
-            child: Card(
-              clipBehavior: Clip.antiAlias,
+      backgroundColor: const Color(0xFFF8FAFC),
+      body: SafeArea(
+        child: Center(
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 480),
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  // ─── Integrated White Logo Header ──────────────────────────
-                  Container(
-                    color: Colors.white,
-                    padding: const EdgeInsets.all(24),
-                    child: Center(
-                      child: Image.asset(
-                        'assets/icon/app_icon.png',
-                        height: 70,
-                      ),
-                    ),
-                  ),
-
-                  // ─── Blue Title Bar ─────────────────────────────────────────
-                  Container(
-                    color: theme.primaryColor,
-                    padding: const EdgeInsets.symmetric(vertical: 16),
-                    child: const Center(
-                      child: Text(
-                        'VELS Driver Log In',
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w600,
-                          color: Colors.white,
-                          letterSpacing: 1.0,
-                        ),
-                      ),
-                    ),
-                  ),
-
-                  // ─── Form Body ──────────────────────────────────────────────
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 48),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
-                      children: [
-                          if (errorMsg != null) ...[
-                            Container(
-                              padding: const EdgeInsets.all(12),
-                              decoration: BoxDecoration(
-                                color: theme.colorScheme.error,
-                                borderRadius: BorderRadius.circular(4),
-                              ),
-                              child: Text(
-                                errorMsg,
-                                textAlign: TextAlign.center,
-                                style: const TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 14,
-                                ),
-                              ),
-                            ),
-                            const SizedBox(height: 24),
-                          ],
-                          
-                          const Text(
-                            'Please sign in with your Vels University email and password.',
-                            textAlign: TextAlign.center,
-                            style: TextStyle(
-                              color: Colors.grey,
-                              fontSize: 14,
-                            ),
+                  // App Icon / Logo
+                  Center(
+                    child: Container(
+                      width: 90,
+                      height: 90,
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        shape: BoxShape.circle,
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withValues(alpha: 0.08),
+                            blurRadius: 16,
+                            offset: const Offset(0, 4),
                           ),
-                          const SizedBox(height: 32),
-                          // Email Field
-                          TextFormField(
-                            controller: _emailController,
-                            decoration: const InputDecoration(
-                              labelText: 'Email Address',
-                              border: OutlineInputBorder(),
-                            ),
-                            keyboardType: TextInputType.emailAddress,
-                          ),
-                          const SizedBox(height: 16),
-                          // Password Field
-                          TextFormField(
-                            controller: _passwordController,
-                            decoration: const InputDecoration(
-                              labelText: 'Password',
-                              border: OutlineInputBorder(),
-                            ),
-                            obscureText: true,
-                          ),
-                          const SizedBox(height: 24),
-                          // Login Button
-                          SizedBox(
-                            height: 54,
-                            child: ElevatedButton(
-                              onPressed: isLoading ? null : () => ref.read(authProvider.notifier).login(email: _emailController.text, password: _passwordController.text),
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: theme.primaryColor,
-                                foregroundColor: Colors.white,
-                                elevation: 4,
-                                shadowColor: theme.primaryColor.withValues(alpha: 0.4),
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(8),
-                                ),
-                              ),
-                              child: isLoading
-                                  ? const SizedBox(
-                                      width: 24,
-                                      height: 24,
-                                      child: CircularProgressIndicator(
-                                        color: Colors.white,
-                                        strokeWidth: 2,
-                                      ),
-                                    )
-                                  : const Text('Log In', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600)),
-                            ),
-                          ),
-                          const SizedBox(height: 16),
-                          // Guest Login Button
-                          SizedBox(
-                            height: 54,
-                            child: OutlinedButton(
-                              onPressed: isLoading ? null : () => ref.read(authProvider.notifier).guestLogin(),
-                              style: OutlinedButton.styleFrom(
-                                foregroundColor: theme.primaryColor,
-                                side: BorderSide(color: theme.primaryColor, width: 2),
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(8),
-                                ),
-                              ),
-                              child: const Text('Continue as Guest', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600)),
-                            ),
-                          ),
-                          const SizedBox(height: 16),
                         ],
                       ),
+                      padding: const EdgeInsets.all(16),
+                      child: Image.asset(
+                        'assets/icon/app_icon.png',
+                        fit: BoxFit.contain,
+                      ),
                     ),
+                  ),
+                  const SizedBox(height: 24),
+
+                  // Title & Subtitle
+                  const Center(
+                    child: Text(
+                      'VELS Bus Tracker',
+                      style: TextStyle(
+                        fontSize: 26,
+                        fontWeight: FontWeight.w800,
+                        color: Color(0xFF0F172A),
+                        letterSpacing: -0.5,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  const Center(
+                    child: Text(
+                      'Select your profile to continue',
+                      style: TextStyle(
+                        fontSize: 14,
+                        color: Color(0xFF64748B),
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 36),
+
+                  if (isLoading)
+                    const Center(
+                      child: Padding(
+                        padding: EdgeInsets.all(32),
+                        child: CircularProgressIndicator(color: AppTheme.primary),
+                      ),
+                    )
+                  else ...[
+                    // ─── Driver Portal Option ─────────────────────────────────
+                    _RoleSelectionCard(
+                      title: 'Driver Portal',
+                      subtitle: 'Start rides, broadcast GPS & view route stops',
+                      icon: Icons.directions_bus_rounded,
+                      color: AppTheme.primary,
+                      onTap: () => _enterAsRole(ref, 'driver'),
+                    ),
+                    const SizedBox(height: 18),
+
+                    // ─── Student Portal Option ────────────────────────────────
+                    _RoleSelectionCard(
+                      title: 'Student Portal',
+                      subtitle: 'Track your campus bus, check live ETA & chat',
+                      icon: Icons.school_rounded,
+                      color: const Color(0xFF2563EB),
+                      onTap: () => _enterAsRole(ref, 'student'),
+                    ),
+                  ],
+
+                  const SizedBox(height: 40),
+                  const Center(
+                    child: Text(
+                      'Vels Institute of Science, Technology & Advanced Studies',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: Color(0xFF94A3B8),
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ),
                 ],
               ),
             ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _RoleSelectionCard extends StatelessWidget {
+  const _RoleSelectionCard({
+    required this.title,
+    required this.subtitle,
+    required this.icon,
+    required this.color,
+    required this.onTap,
+  });
+
+  final String title;
+  final String subtitle;
+  final IconData icon;
+  final Color color;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      color: Colors.white,
+      borderRadius: BorderRadius.circular(18),
+      elevation: 2,
+      shadowColor: Colors.black.withValues(alpha: 0.08),
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(18),
+        splashColor: color.withValues(alpha: 0.12),
+        highlightColor: color.withValues(alpha: 0.06),
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 22),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(18),
+            border: Border.all(color: const Color(0xFFE2E8F0), width: 1.5),
+          ),
+          child: Row(
+            children: [
+              Container(
+                width: 56,
+                height: 56,
+                decoration: BoxDecoration(
+                  color: color.withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(14),
+                ),
+                child: Icon(icon, color: color, size: 28),
+              ),
+              const SizedBox(width: 18),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      title,
+                      style: const TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.w700,
+                        color: Color(0xFF0F172A),
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      subtitle,
+                      style: const TextStyle(
+                        fontSize: 12,
+                        color: Color(0xFF64748B),
+                        height: 1.3,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(width: 12),
+              Container(
+                width: 36,
+                height: 36,
+                decoration: BoxDecoration(
+                  color: const Color(0xFFF1F5F9),
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(
+                  Icons.arrow_forward_ios_rounded,
+                  size: 14,
+                  color: Color(0xFF64748B),
+                ),
+              ),
+            ],
           ),
         ),
       ),

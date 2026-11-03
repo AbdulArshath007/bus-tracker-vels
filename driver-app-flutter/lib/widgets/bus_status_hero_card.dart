@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:vels_student/models/bus_location.dart';
-import 'package:vels_student/theme/app_theme.dart';
-import 'package:vels_student/widgets/connection_badge.dart';
+import 'package:vels_driver/models/bus_location.dart';
+import 'package:vels_driver/theme/app_theme.dart';
+import 'package:vels_driver/widgets/connection_badge.dart';
 
 class BusStatusHeroCard extends StatelessWidget {
   const BusStatusHeroCard({
@@ -144,7 +144,7 @@ class BusStatusHeroCard extends StatelessWidget {
                         style: TextStyle(
                           fontSize: 11,
                           fontWeight: FontWeight.w600,
-                          color: isApproaching ? AppTheme.success : AppTheme.accent,
+                          color: isApproaching ? AppTheme.success : theme.primaryColor,
                         ),
                       ),
                     ],
@@ -312,3 +312,4 @@ class _MetricRow extends StatelessWidget {
     );
   }
 }
+

@@ -1,17 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:vels_student/models/route_stop.dart';
-import 'package:vels_student/providers/student_bus_provider.dart';
-import 'package:vels_student/theme/app_theme.dart';
+import 'package:vels_driver/models/route_stop.dart';
+import 'package:vels_driver/providers/student_bus_provider.dart';
+import 'package:vels_driver/theme/app_theme.dart';
 
-class RouteScreen extends ConsumerStatefulWidget {
-  const RouteScreen({super.key});
+class StudentRouteScreen extends ConsumerStatefulWidget {
+  const StudentRouteScreen({super.key});
 
   @override
-  ConsumerState<RouteScreen> createState() => _RouteScreenState();
+  ConsumerState<StudentRouteScreen> createState() => _StudentRouteScreenState();
 }
 
-class _RouteScreenState extends ConsumerState<RouteScreen> {
+class _StudentRouteScreenState extends ConsumerState<StudentRouteScreen> {
   bool _alarmEnabled = true;
 
   @override
@@ -129,6 +129,7 @@ class _RouteScreenState extends ConsumerState<RouteScreen> {
                       ),
                       Switch(
                         value: _alarmEnabled,
+                        activeColor: theme.primaryColor,
                         onChanged: (val) {
                           setState(() => _alarmEnabled = val);
                           ScaffoldMessenger.of(context).showSnackBar(
@@ -202,7 +203,7 @@ class _TimelineStopTile extends StatelessWidget {
     final isNext = stop.isNext;
     final isPassed = stop.isPassed;
 
-    Color nodeColor = AppTheme.primary;
+    Color nodeColor = theme.primaryColor;
     if (isStudentStop) nodeColor = AppTheme.warning;
     if (isNext) nodeColor = AppTheme.success;
     if (isPassed && !isStudentStop) nodeColor = Colors.grey.shade400;
@@ -211,7 +212,6 @@ class _TimelineStopTile extends StatelessWidget {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          // ── Node & Vertical Connector ─────────────────────────────────────
           SizedBox(
             width: 38,
             child: Column(
@@ -305,7 +305,7 @@ class _TimelineStopTile extends StatelessWidget {
                           style: TextStyle(
                             fontSize: 12,
                             fontWeight: FontWeight.w600,
-                            color: isNext ? AppTheme.success : AppTheme.primary,
+                            color: isNext ? AppTheme.success : theme.primaryColor,
                           ),
                         ),
                       ],
@@ -382,3 +382,4 @@ class _TimelineStopTile extends StatelessWidget {
     );
   }
 }
+

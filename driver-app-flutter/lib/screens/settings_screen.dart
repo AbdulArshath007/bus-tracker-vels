@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:vels_driver/providers/session_provider.dart';
 import 'package:vels_driver/providers/theme_provider.dart';
 import 'package:vels_driver/services/auth_service.dart';
@@ -163,7 +164,12 @@ class SettingsScreen extends ConsumerWidget {
                   color: theme.colorScheme.error.withValues(alpha: 0.3)),
             ),
             child: InkWell(
-              onTap: () => ref.read(authProvider.notifier).logout(),
+              onTap: () async {
+                await ref.read(authProvider.notifier).logout();
+                if (context.mounted) {
+                  context.go('/login');
+                }
+              },
               child: Padding(
                 padding:
                     const EdgeInsets.symmetric(horizontal: 20, vertical: 18),

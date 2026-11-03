@@ -6,14 +6,20 @@ class AppTheme {
   static const Color danger = Color(0xFFEF4444);
   static const Color success = Color(0xFF10B981);
   static const Color warning = Color(0xFFF59E0B);
+  static const Color accent = Color(0xFF0284C7);
+  static const Color purple = Color(0xFF8B5CF6);
 
   // ─── Light Mode Colors ────────────────────────────────────────────────────
+  static const Color primary = Color(0xFF2170B5);
   static const Color lightPrimary = Color(0xFF2170B5);
   static const Color lightBg = Color(0xFFF8FAFC);
   static const Color lightSurface = Color(0xFFFFFFFF);
   static const Color lightTextMain = Color(0xFF0F172A);
   static const Color lightTextMuted = Color(0xFF64748B);
   static const Color lightBorder = Color(0xFFE2E8F0);
+  static const Color border = Color(0xFFE2E8F0);
+  static const Color textPrimary = Color(0xFF0F172A);
+  static const Color textSecondary = Color(0xFF64748B);
 
   // ─── Dark Mode Colors ─────────────────────────────────────────────────────
   static const Color darkPrimary = Color(0xFF3B82F6);
@@ -33,6 +39,7 @@ class AppTheme {
       scaffoldBackgroundColor: lightBg,
       colorScheme: const ColorScheme.light(
         primary: lightPrimary,
+        secondary: accent,
         surface: lightSurface,
         error: danger,
         onPrimary: Colors.white,
@@ -101,6 +108,7 @@ class AppTheme {
       scaffoldBackgroundColor: darkBg,
       colorScheme: const ColorScheme.dark(
         primary: darkPrimary,
+        secondary: accent,
         surface: darkSurface,
         error: danger,
         onPrimary: Colors.white,

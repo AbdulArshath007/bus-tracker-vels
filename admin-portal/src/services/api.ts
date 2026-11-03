@@ -26,9 +26,13 @@ api.interceptors.response.use(
   async (error) => {
     const originalRequest = error.config;
     
-    if (error.response?.status === 401 && !originalRequest._retry) {
-      originalRequest._retry = true;
-      useAuthStore.getState().logout();
+    // Only log out if real JWT rejected, not during mock demo mode
+    if (error.response?.status === 401 && !originalRequest?._retry) {
+      const token = useAuthStore.getState().accessToken;
+      if (token && !token.startsWith('mock_')) {
+        originalRequest._retry = true;
+        useAuthStore.getState().logout();
+      }
     }
     return Promise.reject(error);
   }

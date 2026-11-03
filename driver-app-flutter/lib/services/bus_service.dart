@@ -1,6 +1,6 @@
 import 'package:latlong2/latlong.dart';
-import 'package:vels_student/models/bus_location.dart';
-import 'package:vels_student/models/route_stop.dart';
+import 'package:vels_driver/models/bus_location.dart';
+import 'package:vels_driver/models/route_stop.dart';
 
 class BusService {
   BusService();
@@ -76,7 +76,7 @@ class BusService {
     ),
   ];
 
-  // ─── Accurate Route Polyline Waypoints from Campus Data ───────────────────
+  // ─── Route Polyline Waypoints from Campus Data ───────────────────────────
   static final List<LatLng> routePolyline = [
     const LatLng(12.9249, 80.1278),
     const LatLng(12.9300, 80.1310),
@@ -127,7 +127,7 @@ class BusService {
   ];
 
   Future<BusLocation> getLiveBusLocation(String busId) async {
-    await Future.delayed(const Duration(milliseconds: 300));
+    await Future.delayed(const Duration(milliseconds: 250));
     return BusLocation(
       busId: busId,
       busNumber: 'Bus #01 (Tambaram Route)',
@@ -148,7 +148,8 @@ class BusService {
   }
 
   Future<List<RouteStop>> getRouteStops(String routeId) async {
-    await Future.delayed(const Duration(milliseconds: 200));
+    await Future.delayed(const Duration(milliseconds: 150));
     return mockStops;
   }
 }
+

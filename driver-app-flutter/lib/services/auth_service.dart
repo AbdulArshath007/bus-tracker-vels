@@ -9,56 +9,72 @@ class AuthException implements Exception {
   String toString() => 'AuthException: $message';
 }
 
-/// Auth API service.
-///
-/// Fixes:
-///   • #10 – Validates email format and minimum password length before
-///            making any network call.
+/// Auth API service with instant mock login support for Driver & Student.
 class AuthService {
   AuthService(this._session);
 
   final SessionManager _session;
   final _dio = ApiClient.instance.dio;
 
-  // ─── Login ─────────────────────────────────────────────────────
+  // ─── Role-Based Mock Login (No DB / No Verification) ───────────
+
+  Future<UserProfile> loginWithRole({
+    required String role,
+    String? email,
+    String? password,
+  }) async {
+    await Future.delayed(const Duration(milliseconds: 300));
+    final isDriver = role.toLowerCase().trim() == 'driver';
+
+    final user = isDriver
+        ? UserProfile(
+            id: 'driver_velan',
+            email: (email != null && email.isNotEmpty) ? email : 'driver@vels.edu',
+            name: 'Velan (Driver)',
+            role: 'driver',
+            busId: 'bus_1',
+            routeId: 'route_14',
+            assignedBusNumber: 'Bus #01',
+            assignedRouteName: 'Route 14 - Tambaram to Campus',
+            phone: '+91 98401 23456',
+          )
+        : UserProfile(
+            id: 'student_rahul',
+            email: (email != null && email.isNotEmpty) ? email : 'student@vistas.ac.in',
+            name: 'Rahul (CSE)',
+            role: 'student',
+            busId: 'bus_1',
+            routeId: 'route_14',
+            registerNumber: '2024VELS1089',
+            department: 'Computer Science & Engineering',
+            assignedBusNumber: 'Bus #01',
+            assignedRouteName: 'Route 14 - Tambaram to Campus',
+            boardingStopName: 'Tambaram Sanatorium',
+            phone: '+91 98401 23456',
+          );
+
+    await _session.saveTokens(
+      accessToken: 'dummy_access_token_${user.id}',
+      refreshToken: 'dummy_refresh_token_${user.id}',
+    );
+    await _session.saveUser(user);
+    return user;
+  }
+
+  // ─── Backward-compatible Login ─────────────────────────────────
 
   Future<void> login({
     required String email,
     required String password,
+    String role = 'driver',
   }) async {
-    // Mock login bypass
-    await Future.delayed(const Duration(milliseconds: 500));
-    await _session.saveTokens(
-      accessToken: 'dummy_access_token',
-      refreshToken: 'dummy_refresh_token',
-    );
-    await _session.saveUser(
-      UserProfile(
-        id: 'driver_123',
-        email: email,
-        name: 'Test Driver',
-        role: 'driver',
-        busId: 'bus_1',
-      ),
-    );
+    await loginWithRole(role: role, email: email, password: password);
   }
 
   // ─── Guest Login ───────────────────────────────────────────────
 
-  Future<void> guestLogin() async {
-    // Mock guest login bypass
-    await _session.saveTokens(
-      accessToken: 'dummy_access_token',
-      refreshToken: 'dummy_refresh_token',
-    );
-    await _session.saveUser(
-      const UserProfile(
-        id: 'guest_123',
-        email: 'guest@vels.edu',
-        name: 'Guest Driver',
-        role: 'driver',
-      ),
-    );
+  Future<void> guestLogin({String role = 'driver'}) async {
+    await loginWithRole(role: role);
   }
 
   // ─── Update Profile ────────────────────────────────────────────
@@ -67,40 +83,36 @@ class AuthService {
     String? name,
     String? email,
     String? phone,
+    String? boardingStopName,
+    String? languagePref,
   }) async {
-    final Map<String, dynamic> data = {};
-    if (name != null) data['full_name'] = name;
-    if (email != null) data['email'] = email;
-    if (phone != null) data['phone'] = phone;
-
-    final response = await _dio.patch<Map<String, dynamic>>(
-      'users/me',
-      data: data,
+    final current = await _session.getUser();
+    final updated = (current ?? const UserProfile(id: 'me', name: 'User', role: 'driver')).copyWith(
+      name: name,
+      email: email,
+      phone: phone,
+      boardingStopName: boardingStopName,
+      languagePref: languagePref,
     );
+    await _session.saveUser(updated);
 
-    if (response.data == null) {
-      throw const AuthException('Update failed: empty server response.');
+    try {
+      final Map<String, dynamic> data = {};
+      if (name != null) data['full_name'] = name;
+      if (email != null) data['email'] = email;
+      if (phone != null) data['phone'] = phone;
+
+      await _dio.patch<Map<String, dynamic>>('users/me', data: data);
+    } catch (_) {
+      // Offline fallback: locally updated
     }
 
-    final updated = UserProfile.fromJson(response.data!);
-    await _session.saveUser(updated);
     return updated;
   }
 
   // ─── Logout ────────────────────────────────────────────────────
 
   Future<void> logout() async {
-    final refreshToken = await _session.getRefreshToken();
-    if (refreshToken != null) {
-      try {
-        await _dio.post<void>(
-          'auth/logout',
-          data: {'refresh_token': refreshToken},
-        );
-      } catch (_) {
-        // Even if logout fails on the server, clear locally
-      }
-    }
     await _session.clear();
   }
 }

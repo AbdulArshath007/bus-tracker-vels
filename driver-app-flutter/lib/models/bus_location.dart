@@ -35,11 +35,11 @@ class BusLocation {
 
   factory BusLocation.fromJson(Map<String, dynamic> json) {
     return BusLocation(
-      busId: json['bus_id']?.toString() ?? 'bus_1',
+      busId: json['bus_id']?.toString() ?? json['busId']?.toString() ?? 'bus_1',
       busNumber: json['bus_number'] as String? ?? 'Bus #01 (Pallavaram)',
       routeName: json['route_name'] as String? ?? 'Route 14',
       driverName: json['driver_name'] as String? ?? 'Velan (Driver)',
-      driverPhone: json['driver_phone'] as String? ?? '+91 98765 43210',
+      driverPhone: json['driver_phone'] as String? ?? '+91 98401 23456',
       latitude: (json['latitude'] as num?)?.toDouble() ?? 12.964742,
       longitude: (json['longitude'] as num?)?.toDouble() ?? 80.151757,
       speedKmh: (json['speed_kmh'] as num?)?.toDouble() ?? 28.5,
@@ -56,6 +56,11 @@ class BusLocation {
   }
 
   BusLocation copyWith({
+    String? busId,
+    String? busNumber,
+    String? routeName,
+    String? driverName,
+    String? driverPhone,
     double? latitude,
     double? longitude,
     double? speedKmh,
@@ -68,11 +73,11 @@ class BusLocation {
     double? distanceKm,
   }) {
     return BusLocation(
-      busId: busId,
-      busNumber: busNumber,
-      routeName: routeName,
-      driverName: driverName,
-      driverPhone: driverPhone,
+      busId: busId ?? this.busId,
+      busNumber: busNumber ?? this.busNumber,
+      routeName: routeName ?? this.routeName,
+      driverName: driverName ?? this.driverName,
+      driverPhone: driverPhone ?? this.driverPhone,
       latitude: latitude ?? this.latitude,
       longitude: longitude ?? this.longitude,
       speedKmh: speedKmh ?? this.speedKmh,
@@ -86,3 +91,4 @@ class BusLocation {
     );
   }
 }
+
